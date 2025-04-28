@@ -28,7 +28,7 @@ export default function DireccionOrdenPage() {
         const cargarDatos = async () => {
             if (!user || !ordenId) return
 
-            const { data: orden, error } = await supabase
+            const { data: orden } = await supabase
                 .from('ordenes_placas')
                 .select('direccion_nombre, direccion_telefono, direccion_calle, direccion_colonia, direccion_ciudad, direccion_estado, direccion_codigo_postal')
                 .eq('id', ordenId)
@@ -69,14 +69,14 @@ export default function DireccionOrdenPage() {
             { nombre: 'estado', etiqueta: 'Estado/Provincia' },
             { nombre: 'codigoPostal', etiqueta: 'Código Postal' },
         ]
-    
+
         for (const campo of camposObligatorios) {
             if (!direccion[campo.nombre as keyof typeof direccion]?.trim()) {
                 toast.error(`Falta completar: ${campo.etiqueta}`)
                 return
             }
         }
-    
+
         const { error } = await supabase
             .from('ordenes_placas')
             .update({
@@ -89,7 +89,7 @@ export default function DireccionOrdenPage() {
                 direccion_codigo_postal: direccion.codigoPostal
             })
             .eq('id', ordenId)
-    
+
         if (error) {
             toast.error('Error al guardar dirección')
         } else {
@@ -97,7 +97,6 @@ export default function DireccionOrdenPage() {
             router.push(`/orden/confirmacion?id=${ordenId}`)
         }
     }
-    
 
     if (loading || cargando) {
         return (

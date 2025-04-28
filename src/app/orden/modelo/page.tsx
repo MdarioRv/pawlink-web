@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
+import Image from 'next/image' // 👈 Importa Image de Next.js
 
-// Modelos disponibles
 const modelosDisponibles = [
     { id: 'hueso', nombre: 'Hueso', imagen: '/modelo-hueso.png' },
     { id: 'redondo', nombre: 'Redondo', imagen: '/modelo-redondo.png' },
@@ -16,7 +16,7 @@ const modelosDisponibles = [
 export default function SeleccionarModeloPage() {
     const router = useRouter()
     const searchParams = useSearchParams()
-    const ordenId = searchParams.get('id') // 👈 Recibe el ID de la orden
+    const ordenId = searchParams.get('id')
 
     const [modeloSeleccionado, setModeloSeleccionado] = useState<string | null>(null)
 
@@ -31,7 +31,6 @@ export default function SeleccionarModeloPage() {
             return
         }
 
-        // 🔥 Actualizar en Supabase la orden con el modelo seleccionado
         const { error } = await supabase
             .from('ordenes_placas')
             .update({ modelo: modeloSeleccionado })
@@ -65,12 +64,17 @@ export default function SeleccionarModeloPage() {
                     {modelosDisponibles.map((modelo) => (
                         <div
                             key={modelo.id}
-                            className={`border rounded-lg p-4 bg-white shadow cursor-pointer hover:ring-2 hover:ring-blue-500 transition ${
-                                modeloSeleccionado === modelo.id ? 'ring-2 ring-blue-600' : ''
-                            }`}
+                            className={`border rounded-lg p-4 bg-white shadow cursor-pointer hover:ring-2 hover:ring-blue-500 transition ${modeloSeleccionado === modelo.id ? 'ring-2 ring-blue-600' : ''
+                                }`}
                             onClick={() => setModeloSeleccionado(modelo.id)}
                         >
-                            <img src={modelo.imagen} alt={modelo.nombre} className="w-24 h-24 mx-auto mb-4" />
+                            <Image
+                                src={modelo.imagen}
+                                alt={modelo.nombre}
+                                width={96}
+                                height={96}
+                                className="mx-auto mb-4"
+                            />
                             <h2 className="text-center font-semibold text-gray-800">{modelo.nombre}</h2>
                         </div>
                     ))}

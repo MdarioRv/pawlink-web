@@ -8,10 +8,34 @@ import UbicacionMapa from '@/components/UbicacionMapa'
 import { FaPaw } from 'react-icons/fa'
 import BotonRegresar from '@/components/back'
 
+// ✅ Tipos correctos
+interface Mascota {
+    id: string
+    nombre: string
+    tipo: string
+    raza: string
+    edad: number
+    salud: string
+    imagen: string
+    dueño_id: string
+    ubicacion?: {
+        lat: number
+        lng: number
+        ciudad: string
+        fecha: string
+    }
+}
+
+interface Dueño {
+    nombre: string
+    telefono: string
+    email: string
+}
+
 export default function MascotaPublicaPage() {
     const { id } = useParams()
-    const [mascota, setMascota] = useState<any>(null)
-    const [dueño, setDueño] = useState<any>(null)
+    const [mascota, setMascota] = useState<Mascota | null>(null)
+    const [dueño, setDueño] = useState<Dueño | null>(null)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -31,7 +55,7 @@ export default function MascotaPublicaPage() {
                 return
             }
 
-            setMascota(mascotaData)
+            setMascota(mascotaData as Mascota)
 
             // 2. Cargar datos del dueño
             const { data: perfilData } = await supabase
@@ -40,11 +64,13 @@ export default function MascotaPublicaPage() {
                 .eq('id', mascotaData.dueño_id)
                 .single()
 
-            setDueño({
-                nombre: perfilData?.nombre || 'Usuario',
-                telefono: perfilData?.telefono || 'No disponible',
-                email: perfilData?.email || 'No disponible',
-            })
+            if (perfilData) {
+                setDueño({
+                    nombre: perfilData.nombre || 'Usuario',
+                    telefono: perfilData.telefono || 'No disponible',
+                    email: perfilData.email || 'No disponible',
+                })
+            }
 
             // 3. Cargar última ubicación
             const { data: ubicacionData } = await supabase
@@ -56,10 +82,15 @@ export default function MascotaPublicaPage() {
                 .maybeSingle()
 
             if (ubicacionData) {
-                setMascota((prev: any) => ({
+                setMascota((prev) => prev ? {
                     ...prev,
-                    ubicacion: ubicacionData
-                }))
+                    ubicacion: {
+                        lat: ubicacionData.lat,
+                        lng: ubicacionData.lng,
+                        ciudad: ubicacionData.ciudad,
+                        fecha: ubicacionData.fecha,
+                    }
+                } : null)
             }
 
             setLoading(false)
@@ -79,6 +110,7 @@ export default function MascotaPublicaPage() {
     return (
         <main className="min-h-screen bg-blue-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-8 space-y-6">
+
                 {/* Botón Regresar */}
                 <div className="text-left">
                     <BotonRegresar />
@@ -133,6 +165,7 @@ export default function MascotaPublicaPage() {
                         <p className="font-medium">📧 {dueño.email}</p>
                     </div>
                 )}
+
             </div>
         </main>
     )

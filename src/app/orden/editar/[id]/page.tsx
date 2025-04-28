@@ -29,7 +29,7 @@ export default function EditarDireccionOrdenPage() {
         const cargarDatos = async () => {
             if (!user || !ordenId) return
 
-            const { data: orden, error } = await supabase
+            const { data: orden } = await supabase
                 .from('ordenes_placas')
                 .select('direccion_nombre, direccion_telefono, direccion_calle, direccion_colonia, direccion_ciudad, direccion_estado, direccion_codigo_postal, tipo_placa')
                 .eq('id', ordenId)
@@ -136,6 +136,7 @@ export default function EditarDireccionOrdenPage() {
 
                 {/* Dirección de envío */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Nombre */}
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Nombre del receptor *</label>
                         <input
@@ -147,6 +148,7 @@ export default function EditarDireccionOrdenPage() {
                         />
                     </div>
 
+                    {/* Teléfono */}
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Teléfono *</label>
                         <input
@@ -158,6 +160,7 @@ export default function EditarDireccionOrdenPage() {
                         />
                     </div>
 
+                    {/* Calle */}
                     <div className="md:col-span-2">
                         <label className="block mb-1 text-sm font-medium text-gray-700">Calle y número *</label>
                         <input
@@ -169,6 +172,7 @@ export default function EditarDireccionOrdenPage() {
                         />
                     </div>
 
+                    {/* Colonia */}
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Colonia (opcional)</label>
                         <input
@@ -180,6 +184,7 @@ export default function EditarDireccionOrdenPage() {
                         />
                     </div>
 
+                    {/* Ciudad */}
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Ciudad *</label>
                         <input
@@ -191,6 +196,7 @@ export default function EditarDireccionOrdenPage() {
                         />
                     </div>
 
+                    {/* Estado */}
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Estado / Provincia *</label>
                         <input
@@ -202,6 +208,7 @@ export default function EditarDireccionOrdenPage() {
                         />
                     </div>
 
+                    {/* Código Postal */}
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Código Postal *</label>
                         <input

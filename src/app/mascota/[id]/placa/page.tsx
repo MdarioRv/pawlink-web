@@ -1,14 +1,20 @@
 'use client'
+
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import QRCode from 'react-qr-code'
 
+// ✅ Interfaz correcta
+interface Mascota {
+    nombre: string
+}
+
 export default function PlacaVisualPage() {
     const { id } = useParams()
-    const [mascota, setMascota] = useState<any | null>(null)
+    const [mascota, setMascota] = useState<Mascota | null>(null)
 
     useEffect(() => {
-        const datos: Record<string, any> = {
+        const datos: Record<string, Mascota> = {
             '1': {
                 nombre: 'Firulais',
             },
@@ -37,7 +43,6 @@ export default function PlacaVisualPage() {
                 </h2>
             </div>
             <p className="text-gray-500 text-sm">🟦 Vista Frontal – Estilo huesito</p>
-
 
             {/* Vista Trasera */}
             <div className="w-[240px] h-[240px] bg-white rounded-full shadow-xl border-4 border-gray-300 flex items-center justify-center p-6">

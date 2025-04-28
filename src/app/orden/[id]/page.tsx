@@ -1,46 +1,49 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import { useUser } from '@/hooks/useUser'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import { FaCheckCircle, FaExclamationTriangle, FaTrash } from 'react-icons/fa'
+import { FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa'
 import BotonRegresar from '@/components/back'
+
+// Corrigiendo la definición de tipos
+interface Orden {
+    id: string
+    tipo_placa: string
+    precio: number
+    estatus: string
+    fecha: string
+    mascota_id: string
+    mascotas?: {
+        nombre: string
+    }[] | null // <- Aquí debe ser un ARRAY, no un objeto simple
+}
 
 export default function OrdenDetallePage() {
     const { id } = useParams()
     const { user, loading } = useUser()
     const router = useRouter()
 
-    const [orden, setOrden] = useState<any>(null)
+    const [orden, setOrden] = useState<Orden | null>(null)
     const [cargando, setCargando] = useState(true)
     const [isDeleting, setIsDeleting] = useState(false)
     const [showModal, setShowModal] = useState(false)
 
-    useEffect(() => {
-        if (!loading && !user) {
-            router.push('/login')
-        }
-
-        if (user && id) {
-            cargarOrden()
-        }
-    }, [user, id, loading])
-
-    const cargarOrden = async () => {
+    const cargarOrden = useCallback(async () => {
         const { data, error } = await supabase
             .from('ordenes_placas')
             .select(`
-        id,
-        tipo_placa,
-        precio,
-        estatus,
-        fecha,
-        mascota_id,
-        mascotas (nombre)
-      `)
+                id,
+                tipo_placa,
+                precio,
+                estatus,
+                fecha,
+                mascota_id,
+                mascotas:mascotas (nombre)
+            `)
             .eq('id', id)
             .eq('usuario_id', user?.id)
             .single()
@@ -53,7 +56,17 @@ export default function OrdenDetallePage() {
 
         setOrden(data)
         setCargando(false)
-    }
+    }, [id, user, router])
+
+    useEffect(() => {
+        if (!loading && !user) {
+            router.push('/login')
+        }
+
+        if (user && id) {
+            cargarOrden()
+        }
+    }, [user, id, loading, cargarOrden, router])
 
     const handleEliminar = async () => {
         setIsDeleting(true)
@@ -95,15 +108,15 @@ export default function OrdenDetallePage() {
                 <div className="text-left">
                     <BotonRegresar />
                 </div>
-                {/* Encabezado */}
+
                 <div className="text-center space-y-2">
                     <h1 className="text-3xl font-bold text-blue-700">Detalle de la Orden</h1>
                     <p className="text-gray-600">Consulta tu compra y accede a más acciones.</p>
                 </div>
 
-                {/* Info */}
                 <div className="space-y-2 text-gray-800 text-sm sm:text-base">
-                    <p><strong>Mascota:</strong> {orden.mascotas?.nombre || 'Sin nombre'}</p>
+                    <p><strong>Mascota:</strong> {orden.mascotas?.[0]?.nombre || 'Sin nombre'}</p>
+
                     <p><strong>Tipo de Placa:</strong> {nombrePlaca}</p>
                     <p><strong>Precio:</strong> {precio}</p>
                     <p><strong>Fecha de Orden:</strong> {fecha}</p>
@@ -114,7 +127,6 @@ export default function OrdenDetallePage() {
                     </p>
                 </div>
 
-                {/* Acciones */}
                 <div className="flex flex-col gap-4 pt-4">
                     {orden.estatus === 'pendiente' && (
                         <>
@@ -156,7 +168,6 @@ export default function OrdenDetallePage() {
                 </div>
             </div>
 
-            {/* Modal de confirmación */}
             {showModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg p-6 shadow-md w-full max-w-md">

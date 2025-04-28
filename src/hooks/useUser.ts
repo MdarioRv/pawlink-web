@@ -10,7 +10,7 @@ export function useUser() {
 
     useEffect(() => {
         const getSession = async () => {
-            const { data, error } = await supabase.auth.getSession()
+            const { data } = await supabase.auth.getSession()
             setSession(data.session)
             setLoading(false)
         }

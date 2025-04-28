@@ -8,21 +8,37 @@ import toast from 'react-hot-toast'
 import { FaSpinner, FaExclamationCircle, FaShoppingCart, FaCreditCard } from 'react-icons/fa'
 import BotonRegresar from '@/components/back'
 
+// 🛠 Tipos definidos
+interface Orden {
+    id: string
+    mascota_id: string
+    tipo_placa: 'qr' | 'gps'
+    precio: number
+    estatus: 'pendiente' | 'pagado' | 'enviado'
+}
+
+interface Mascota {
+    nombre: string
+}
+
 export default function PagoPage() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const { user, loading } = useUser()
     const ordenId = searchParams.get('id')
 
-    const [orden, setOrden] = useState<any>(null)
-    const [mascota, setMascota] = useState<any>(null)
+    const [orden, setOrden] = useState<Orden | null>(null)
+    const [mascota, setMascota] = useState<Mascota | null>(null)
     const [cargando, setCargando] = useState(true)
     const [isProcessingPayment, setIsProcessingPayment] = useState(false)
 
     useEffect(() => {
-        if (!loading && !user) router.push('/login')
-        if (ordenId && user) cargarOrden()
-        else if (!loading && !ordenId) setCargando(false)
+        const cargar = async () => {
+            if (!loading && !user) router.push('/login')
+            if (ordenId && user) await cargarOrden()
+            else if (!loading && !ordenId) setCargando(false)
+        }
+        cargar()
     }, [user, ordenId, loading])
 
     const cargarOrden = async () => {
@@ -69,7 +85,7 @@ export default function PagoPage() {
             toast.error('Error al procesar el pago')
         } else {
             toast.success('¡Pago realizado exitosamente! ✅')
-            setOrden((prevOrden: any) => ({ ...prevOrden, estatus: 'pagado' }))
+            setOrden((prevOrden) => prevOrden ? { ...prevOrden, estatus: 'pagado' } : prevOrden)
             router.push('/orden/exito')
         }
     }
@@ -170,8 +186,7 @@ export default function PagoPage() {
                         <button
                             onClick={handlePagar}
                             disabled={isProcessingPayment || orden.estatus === 'pagado'}
-                            className={`w-full flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${(isProcessingPayment || orden.estatus === 'pagado') ? 'opacity-50 cursor-not-allowed' : ''
-                                }`}
+                            className={`w-full flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${(isProcessingPayment || orden.estatus === 'pagado') ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             {isProcessingPayment ? (
                                 <>
@@ -196,7 +211,6 @@ export default function PagoPage() {
                                 🗑️ Cancelar Orden
                             </button>
                         )}
-
 
                         {orden.estatus === 'pagado' && (
                             <p className="text-center text-sm text-green-700 mt-3">Esta orden ya fue completada.</p>

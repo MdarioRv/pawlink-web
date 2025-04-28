@@ -1,15 +1,30 @@
 'use client'
+
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import QRCodeMascota from '@/components/QRCodeMascota'
 
+// ✅ Definimos la interfaz correcta
+interface Mascota {
+    nombre: string
+    tipo: string
+    raza: string
+    edad: number
+    imagen: string
+    contacto: {
+        nombre: string
+        telefono: string
+        email: string
+    }
+}
+
 export default function ImprimirHorizontalPage() {
     const { id } = useParams()
-    const [mascota, setMascota] = useState<any | null>(null)
+    const [mascota, setMascota] = useState<Mascota | null>(null)
 
     useEffect(() => {
-        const datos: Record<string, any> = {
+        const datos: Record<string, Mascota> = {
             '1': {
                 nombre: 'Loba',
                 tipo: 'Perro',

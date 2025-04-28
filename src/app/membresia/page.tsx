@@ -148,16 +148,20 @@ export default function MembresiaPage() {
                     </div>
                 </section>
 
-                {/* Sección: Testimonios (Simple) */}
+                {/* Sección: Testimonios (Corregida) */}
                 <section className="text-center">
                     <h2 className="text-3xl font-bold text-gray-800 mb-8">Dueños más tranquilos gracias a PAWLINK</h2>
                     <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                         <blockquote className="bg-gray-100 p-6 rounded-lg shadow-sm">
-                            <p className="text-gray-700 italic mb-4">"Perdí a Rocky en el parque y lo encontré en 10 minutos gracias al GPS de Pawlink Premium. ¡No tiene precio esa tranquilidad!"</p>
+                            <p className="text-gray-700 italic mb-4">
+                                &quot;Perdí a Rocky en el parque y lo encontré en 10 minutos gracias al GPS de Pawlink Premium. ¡No tiene precio esa tranquilidad!&quot;
+                            </p>
                             <footer className="text-sm font-semibold text-blue-700">- Ana L.</footer>
                         </blockquote>
                         <blockquote className="bg-gray-100 p-6 rounded-lg shadow-sm">
-                            <p className="text-gray-700 italic mb-4">"Me encanta recibir la notificación cuando el paseador escanea la placa al recoger a Max. Sé que está en buenas manos."</p>
+                            <p className="text-gray-700 italic mb-4">
+                                &quot;Me encanta recibir la notificación cuando el paseador escanea la placa al recoger a Max. Sé que está en buenas manos.&quot;
+                            </p>
                             <footer className="text-sm font-semibold text-blue-700">- Carlos M.</footer>
                         </blockquote>
                     </div>

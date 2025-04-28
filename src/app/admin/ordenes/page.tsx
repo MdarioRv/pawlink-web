@@ -7,10 +7,24 @@ import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 import { FaShoppingCart, FaSpinner } from 'react-icons/fa'
 
+// ✅ Tipado correcto para las órdenes
+interface Orden {
+    id: string
+    mascota_id: string
+    tipo_placa: 'qr' | 'gps'
+    precio: number
+    estatus: 'pendiente' | 'pagado' | 'enviado'
+    fecha: string
+    mascotas: {
+        nombre: string
+    }[] | null   // ✅ Ahora es un array de objetos
+    usuario_id: string
+}
+
 export default function AdminOrdenesPage() {
     const { user, loading } = useUser()
     const router = useRouter()
-    const [ordenes, setOrdenes] = useState<any[]>([])
+    const [ordenes, setOrdenes] = useState<Orden[]>([]) // ✅ useState tipado
     const [loadingOrdenes, setLoadingOrdenes] = useState(true)
 
     useEffect(() => {
@@ -20,7 +34,7 @@ export default function AdminOrdenesPage() {
                 return
             }
 
-            // Verificar si el usuario es admin
+            // Verificar si es admin
             const { data: adminData, error: adminError } = await supabase
                 .from('admin_users')
                 .select('id')
@@ -32,7 +46,7 @@ export default function AdminOrdenesPage() {
                 return
             }
 
-            // Cargar órdenes + nombre de la mascota
+            // Cargar órdenes
             const { data, error } = await supabase
                 .from('ordenes_placas')
                 .select(`
@@ -50,7 +64,7 @@ export default function AdminOrdenesPage() {
             if (error) {
                 console.error('Error cargando órdenes:', error)
             } else {
-                setOrdenes(data)
+                setOrdenes(data as Orden[]) // ✅ Tipado correcto
             }
             setLoadingOrdenes(false)
         }
@@ -63,8 +77,10 @@ export default function AdminOrdenesPage() {
     if (loading || loadingOrdenes) {
         return (
             <main className="min-h-screen flex items-center justify-center bg-white">
-                <FaSpinner className="animate-spin text-blue-600 text-4xl mb-4" />
-                <p className="text-gray-600">Cargando órdenes...</p>
+                <div className="text-center">
+                    <FaSpinner className="animate-spin text-blue-600 text-4xl mb-4" />
+                    <p className="text-gray-600">Cargando órdenes...</p>
+                </div>
             </main>
         )
     }
@@ -85,59 +101,44 @@ export default function AdminOrdenesPage() {
                 </section>
 
                 {/* Órdenes Pendientes */}
-                <section>
-                    <h2 className="text-2xl font-bold text-yellow-600 mb-4">⏳ Órdenes Pendientes</h2>
-                    {pendientes.length > 0 ? (
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {pendientes.map((orden) => (
-                                <OrdenCard key={orden.id} orden={orden} />
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-gray-500">No hay órdenes pendientes.</p>
-                    )}
-                </section>
+                <OrdenesSeccion titulo="⏳ Órdenes Pendientes" color="text-yellow-600" ordenes={pendientes} />
 
                 {/* Órdenes Pagadas */}
-                <section>
-                    <h2 className="text-2xl font-bold text-green-600 mb-4">✅ Órdenes Pagadas</h2>
-                    {pagadas.length > 0 ? (
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {pagadas.map((orden) => (
-                                <OrdenCard key={orden.id} orden={orden} />
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-gray-500">No hay órdenes pagadas.</p>
-                    )}
-                </section>
+                <OrdenesSeccion titulo="✅ Órdenes Pagadas" color="text-green-600" ordenes={pagadas} />
 
                 {/* Órdenes Enviadas */}
-                <section>
-                    <h2 className="text-2xl font-bold text-blue-600 mb-4">📦 Órdenes Enviadas</h2>
-                    {enviadas.length > 0 ? (
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {enviadas.map((orden) => (
-                                <OrdenCard key={orden.id} orden={orden} />
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-gray-500">No hay órdenes enviadas.</p>
-                    )}
-                </section>
+                <OrdenesSeccion titulo="📦 Órdenes Enviadas" color="text-blue-600" ordenes={enviadas} />
 
             </div>
         </main>
     )
 }
 
-function OrdenCard({ orden }: { orden: any }) {
+// ✅ Componente para cada sección
+function OrdenesSeccion({ titulo, color, ordenes }: { titulo: string, color: string, ordenes: Orden[] }) {
+    return (
+        <section>
+            <h2 className={`text-2xl font-bold ${color} mb-4`}>{titulo}</h2>
+            {ordenes.length > 0 ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {ordenes.map((orden) => (
+                        <OrdenCard key={orden.id} orden={orden} />
+                    ))}
+                </div>
+            ) : (
+                <p className="text-gray-500">No hay órdenes.</p>
+            )}
+        </section>
+    )
+}
+
+// ✅ Tarjeta individual de Orden
+function OrdenCard({ orden }: { orden: Orden }) {
     return (
         <div className="bg-white p-6 rounded-xl shadow space-y-4">
             <div>
                 <p className="font-bold text-gray-800">Mascota:</p>
-                <p>{orden.mascotas?.nombre || 'Sin nombre'}</p>
-                {/* ✅ Corrección aquí */}
+                <p>{orden.mascotas?.[0]?.nombre || 'Sin nombre'}</p> {/* ✅ Ojo aquí, .[0] */}
             </div>
             <div>
                 <p className="font-bold text-gray-800">Tipo de placa:</p>

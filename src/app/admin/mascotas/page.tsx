@@ -6,11 +6,24 @@ import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import { FaDog, FaSpinner } from 'react-icons/fa'
 import Link from 'next/link'
+import Image from 'next/image' // ✅ Importar Image de Next.js
+
+// Definimos un tipo correcto en vez de any
+interface Mascota {
+    id: string
+    nombre: string
+    tipo: string
+    raza: string
+    edad: number
+    salud: string
+    imagen: string
+    created_at: string
+}
 
 export default function AdminMascotasPage() {
     const { user, loading } = useUser()
     const router = useRouter()
-    const [mascotas, setMascotas] = useState<any[]>([])
+    const [mascotas, setMascotas] = useState<Mascota[]>([]) // ✅ Cambiado any[] por Mascota[]
     const [loadingMascotas, setLoadingMascotas] = useState(true)
 
     useEffect(() => {
@@ -20,7 +33,6 @@ export default function AdminMascotasPage() {
                 return
             }
 
-            // Validar que sea admin
             const { data: adminData, error: adminError } = await supabase
                 .from('admin_users')
                 .select('id')
@@ -32,7 +44,6 @@ export default function AdminMascotasPage() {
                 return
             }
 
-            // Cargar mascotas (gracias a la política RLS ya funcionan todas o propias)
             const { data, error } = await supabase
                 .from('mascotas')
                 .select('id, nombre, tipo, raza, edad, salud, imagen, created_at')
@@ -41,7 +52,7 @@ export default function AdminMascotasPage() {
             if (error) {
                 console.error('Error cargando mascotas:', error)
             } else {
-                setMascotas(data)
+                setMascotas(data as Mascota[]) // ✅ Forzamos tipo aquí
             }
             setLoadingMascotas(false)
         }
@@ -76,7 +87,14 @@ export default function AdminMascotasPage() {
                     {mascotas.map((mascota) => (
                         <div key={mascota.id} className="bg-white p-6 rounded-xl shadow space-y-4">
                             {mascota.imagen ? (
-                                <img src={mascota.imagen} alt="Mascota" className="w-full h-48 object-cover rounded-lg" />
+                                <Image
+                                    src={mascota.imagen}
+                                    alt={`Foto de ${mascota.nombre}`}
+                                    width={400}
+                                    height={300}
+                                    className="w-full h-48 object-cover rounded-lg"
+                                    unoptimized
+                                />
                             ) : (
                                 <div className="w-full h-48 bg-gray-200 flex items-center justify-center rounded-lg text-gray-400">
                                     Sin foto

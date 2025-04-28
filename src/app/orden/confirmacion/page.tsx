@@ -1,11 +1,30 @@
 'use client'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import { useUser } from '@/hooks/useUser'
 import toast from 'react-hot-toast'
 import BotonRegresar from '@/components/back'
+
+// 🛠 Define tipos de datos
+interface Mascota {
+    nombre: string
+}
+
+interface Orden {
+    id: string
+    mascota_id: string
+    tipo_placa: string
+    precio: number
+    estatus: string
+    direccion_calle: string
+    direccion_colonia: string | null
+    direccion_ciudad: string
+    direccion_estado: string
+    direccion_codigo_postal: string
+    mascotas?: Mascota[] | null
+}
 
 export default function ConfirmacionOrdenPage() {
     const searchParams = useSearchParams()
@@ -13,33 +32,27 @@ export default function ConfirmacionOrdenPage() {
     const { user, loading } = useUser()
     const router = useRouter()
 
-    const [orden, setOrden] = useState<any>(null)
-    const [mascota, setMascota] = useState<any>(null)
+    const [orden, setOrden] = useState<Orden | null>(null)
+    const [mascota, setMascota] = useState<Mascota | null>(null)
     const [modeloSeleccionado, setModeloSeleccionado] = useState<string | null>(null)
     const [cargando, setCargando] = useState(true)
 
-    useEffect(() => {
-        if (!loading && !user) router.push('/login')
-        if (user && ordenId) cargarOrden()
-    }, [user, ordenId, loading])
-
-    const cargarOrden = async () => {
+    const cargarOrden = useCallback(async () => {
         const { data, error } = await supabase
             .from('ordenes_placas')
             .select(`
-                id,
-                mascota_id,
-                tipo_placa,
-                precio,
-                estatus,
-                direccion_calle,
-                direccion_colonia,
-                direccion_ciudad,
-                direccion_estado,
-                direccion_codigo_postal,
-                mascotas (nombre)
-            `)
-
+        id,
+        mascota_id,
+        tipo_placa,
+        precio,
+        estatus,
+        direccion_calle,
+        direccion_colonia,
+        direccion_ciudad,
+        direccion_estado,
+        direccion_codigo_postal,
+        mascotas (nombre)
+      `)
             .eq('id', ordenId)
             .eq('usuario_id', user?.id)
             .maybeSingle()
@@ -49,13 +62,18 @@ export default function ConfirmacionOrdenPage() {
             router.push('/dashboard')
         } else {
             setOrden(data)
-            setMascota(data.mascotas)
+            setMascota(data.mascotas?.[0] || null)
             const modelo = localStorage.getItem('modeloSeleccionado')
             setModeloSeleccionado(modelo)
         }
 
         setCargando(false)
-    }
+    }, [ordenId, user, router])
+
+    useEffect(() => {
+        if (!loading && !user) router.push('/login')
+        if (user && ordenId) cargarOrden()
+    }, [user, ordenId, loading, cargarOrden, router]) // ← Ahora dependencias correctas
 
     const handleProcederPago = () => {
         router.push(`/orden/pago?id=${ordenId}`)
@@ -102,7 +120,6 @@ export default function ConfirmacionOrdenPage() {
                             , {orden.direccion_ciudad}, {orden.direccion_estado}, CP {orden.direccion_codigo_postal}
                         </p>
                     </div>
-
 
                     <div className="font-bold text-lg text-gray-900 mt-6">
                         Total a Pagar: <span className="text-blue-700">${orden.precio} MXN</span>

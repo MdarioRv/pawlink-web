@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useUser } from '@/hooks/useUser'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
-import { FaShieldAlt, FaUsers, FaShoppingCart, FaDog, FaChartBar } from 'react-icons/fa'
+import { FaShieldAlt, FaUsers, FaShoppingCart, FaDog } from 'react-icons/fa' // ✅ quitamos FaChartBar
 
 export default function AdminPage() {
     const { user, loading } = useUser()
@@ -25,7 +25,7 @@ export default function AdminPage() {
                 return
             }
 
-            const { data, error } = await supabase
+            const { data } = await supabase // ✅ quitamos 'error'
                 .from('admin_users')
                 .select('id')
                 .eq('id', user.id)

@@ -9,12 +9,31 @@ import { FaPaw, FaUserCircle, FaBell, FaDog, FaQrcode, FaStar, FaPlus } from 're
 import QRCodeMascota from '@/components/QRCodeMascota'
 import toast from 'react-hot-toast'
 
+// ✅ Tipado correcto
+interface Mascota {
+    id: string
+    nombre: string
+    tipo: string
+    estado: string
+}
+
+interface Orden {
+    id: string
+    tipo_placa: 'qr' | 'gps'
+    precio: number
+    estatus: 'pendiente' | 'pagado' | 'enviado'
+    mascota_id: string
+    mascotas: {
+        nombre: string
+    }[] | null   // ✅ array de objetos
+}
+
+
 export default function DashboardPage() {
     const { user, loading } = useUser()
     const router = useRouter()
-    const [mascotas, setMascotas] = useState<any[]>([])
-    const [ordenes, setOrdenes] = useState<any[]>([])
-    const [loadingMascotas, setLoadingMascotas] = useState(true)
+    const [mascotas, setMascotas] = useState<Mascota[]>([])
+    const [ordenes, setOrdenes] = useState<Orden[]>([])
     const [loadingOrdenes, setLoadingOrdenes] = useState(true)
     const [ultimaSesion, setUltimaSesion] = useState<string | null>(null)
 
@@ -33,12 +52,10 @@ export default function DashboardPage() {
             toast.error('Error al eliminar la mascota.')
         } else {
             toast.success('Mascota eliminada correctamente')
-            setMascotas(prev => prev.filter(m => m.id !== mascotaId)) // actualiza el estado
+            setMascotas(prev => prev.filter(m => m.id !== mascotaId))
         }
     }
 
-
-    // 🔒 Redirigir si no hay usuario
     useEffect(() => {
         if (!loading && !user) {
             router.push('/login')
@@ -67,10 +84,8 @@ export default function DashboardPage() {
                 .eq('dueño_id', user.id)
 
             if (!error && data) {
-                setMascotas(data)
+                setMascotas(data as Mascota[])
             }
-
-            setLoadingMascotas(false)
         }
 
         fetchMascotas()
@@ -93,7 +108,7 @@ export default function DashboardPage() {
                     .order('fecha', { ascending: false })
 
                 if (!error && data) {
-                    setOrdenes(data)
+                    setOrdenes(data as Orden[])
                 }
 
                 setLoadingOrdenes(false)
@@ -103,7 +118,6 @@ export default function DashboardPage() {
         cargarOrdenes()
     }, [user])
 
-    // ⏳ Mientras se verifica sesión no renderizamos nada
     if (loading) {
         return (
             <main className="min-h-screen flex items-center justify-center bg-white">
@@ -112,7 +126,6 @@ export default function DashboardPage() {
         )
     }
 
-    // 🔒 Seguridad extra (por si user es null justo después del loading)
     if (!user) return null
 
     const plan = {
@@ -241,7 +254,7 @@ export default function DashboardPage() {
                                 <tbody className="text-gray-800 bg-white">
                                     {ordenes.map((orden) => (
                                         <tr key={orden.id} className="border-t">
-                                            <td className="px-4 py-3">{orden.mascotas?.nombre || 'Sin nombre'}</td>
+                                            <td className="px-4 py-3">{orden.mascotas?.[0]?.nombre || 'Sin nombre'}                                            </td>
                                             <td className="px-4 py-3 capitalize">{orden.tipo_placa === 'qr' ? 'QR Básica' : 'QR + GPS Premium'}</td>
                                             <td className="px-4 py-3">${orden.precio}</td>
                                             <td className="px-4 py-3">
@@ -269,7 +282,6 @@ export default function DashboardPage() {
     )
 }
 
-// COMPONENTES AUXILIARES
 function DashboardAction({ href, icon, label, color }: { href: string, icon: React.ReactNode, label: string, color: string }) {
     const colorMap: Record<string, string> = {
         blue: 'bg-blue-100 text-blue-700 hover:bg-blue-200',

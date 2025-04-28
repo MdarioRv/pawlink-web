@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+
 export default function VerificarCorreoPage() {
     return (
         <main className="min-h-screen flex items-center justify-center bg-blue-50 px-4 py-12">
@@ -14,9 +16,9 @@ export default function VerificarCorreoPage() {
                 <p className="text-xs text-gray-400">
                     Si no lo ves, revisa tu carpeta de spam o correo no deseado.
                 </p>
-                <a href="/" className="inline-block mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                <Link href="/" className="inline-block mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
                     Volver al inicio
-                </a>
+                </Link>
             </div>
         </main>
     )

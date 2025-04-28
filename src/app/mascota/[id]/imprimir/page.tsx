@@ -1,16 +1,30 @@
 'use client'
+
 import Image from 'next/image'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import QRCodeMascota from '@/components/QRCodeMascota'
 
+// ✅ Interfaz correcta
+interface Mascota {
+    nombre: string
+    tipo: string
+    raza: string
+    edad: number
+    imagen: string
+    contacto: {
+        nombre: string
+        telefono: string
+        email: string
+    }
+}
+
 export default function ImprimirMascotaPage() {
     const { id } = useParams()
-    const [mascota, setMascota] = useState<any | null>(null)
+    const [mascota, setMascota] = useState<Mascota | null>(null)
 
     useEffect(() => {
-        // Simulación de datos (puedes reemplazar por Supabase luego)
-        const datos: Record<string, any> = {
+        const datos: Record<string, Mascota> = {
             '1': {
                 nombre: 'Firulais',
                 tipo: 'Perro',
@@ -40,6 +54,7 @@ export default function ImprimirMascotaPage() {
     return (
         <main className="min-h-screen bg-white px-4 py-8 print:px-0 print:py-0">
             <div className="max-w-xl mx-auto border border-gray-300 rounded-xl shadow-md p-6 space-y-6 print:shadow-none print:border-none">
+
                 {/* Header */}
                 <div className="text-center">
                     <h1 className="text-3xl font-bold text-blue-700">Ficha de Mascota</h1>
@@ -83,6 +98,7 @@ export default function ImprimirMascotaPage() {
                         🖨️ Imprimir
                     </button>
                 </div>
+
             </div>
         </main>
     )

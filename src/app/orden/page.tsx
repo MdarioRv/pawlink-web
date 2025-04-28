@@ -4,9 +4,14 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import { useUser } from '@/hooks/useUser'
-import Link from 'next/link'
 import toast from 'react-hot-toast'
 import BotonRegresar from '@/components/back'
+
+// 🛠 Nuevo tipo
+interface MascotaUsuario {
+    id: string
+    nombre: string
+}
 
 export default function OrdenarPlacaPage() {
     const searchParams = useSearchParams()
@@ -18,19 +23,17 @@ export default function OrdenarPlacaPage() {
     const [seleccion, setSeleccion] = useState<'qr' | 'gps' | null>(null)
     const [nombreMascota, setNombreMascota] = useState<string | null>(null)
     const [yaTieneOrden, setYaTieneOrden] = useState<boolean>(false)
-    const [mascotasUsuario, setMascotasUsuario] = useState<any[]>([])
+    const [mascotasUsuario, setMascotasUsuario] = useState<MascotaUsuario[]>([])
     const [idMascotaSeleccionada, setIdMascotaSeleccionada] = useState<string>('')
 
     const precio = seleccion === 'qr' ? 150 : seleccion === 'gps' ? 350 : 0
 
-    // Si es upgrade, fuerza GPS
     useEffect(() => {
         if (isUpgrade) {
             setSeleccion('gps')
         }
     }, [isUpgrade])
 
-    // Cargar nombre de mascota y verificar si tiene orden (modo upgrade)
     useEffect(() => {
         const fetchMascota = async () => {
             if (idMascota && isUpgrade) {
@@ -55,7 +58,6 @@ export default function OrdenarPlacaPage() {
         fetchMascota()
     }, [idMascota, isUpgrade])
 
-    // Cargar mascotas (modo normal)
     useEffect(() => {
         const cargarMascotas = async () => {
             if (!isUpgrade && user) {
@@ -71,7 +73,6 @@ export default function OrdenarPlacaPage() {
         cargarMascotas()
     }, [isUpgrade, user])
 
-    // Cuando elige mascota, validar si tiene orden
     useEffect(() => {
         const validarOrden = async () => {
             if (idMascotaSeleccionada) {
@@ -121,7 +122,7 @@ export default function OrdenarPlacaPage() {
             toast.error('Error al crear orden')
         } else {
             toast.success('Orden creada correctamente')
-            router.push(`/orden/modelo?id=${data.id}`) // 🔥 Ahora redirige a elegir modelo
+            router.push(`/orden/modelo?id=${data.id}`)
         }
     }
 
@@ -137,7 +138,6 @@ export default function OrdenarPlacaPage() {
         <main className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto space-y-10 text-center">
 
-                {/* Botón Regresar */}
                 <div className="text-left">
                     <BotonRegresar />
                 </div>
@@ -172,7 +172,6 @@ export default function OrdenarPlacaPage() {
                 )}
 
                 <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6 text-left">
-                    {/* Placa QR */}
                     <div
                         onClick={() => setSeleccion('qr')}
                         className={`cursor-pointer rounded-xl border p-6 transition shadow hover:shadow-lg ${seleccion === 'qr' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'}`}
@@ -187,7 +186,6 @@ export default function OrdenarPlacaPage() {
                         <p className="mt-4 text-lg font-semibold text-blue-600">$150 MXN</p>
                     </div>
 
-                    {/* Placa QR + GPS */}
                     <div
                         onClick={() => setSeleccion('gps')}
                         className={`cursor-pointer rounded-xl border p-6 transition shadow hover:shadow-lg ${seleccion === 'gps' ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 bg-white'}`}
@@ -203,14 +201,13 @@ export default function OrdenarPlacaPage() {
                     </div>
                 </div>
 
-                {/* Botón Finalizar */}
                 {seleccion && (
                     <div className="pt-6">
                         <button
                             onClick={handleOrdenar}
                             disabled={yaTieneOrden}
                             className={`px-8 py-3 rounded-lg font-semibold transition text-white 
-                                ${yaTieneOrden ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                  ${yaTieneOrden ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
                         >
                             {seleccion === 'qr'
                                 ? 'Ordenar Placa QR Básica'

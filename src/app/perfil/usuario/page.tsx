@@ -19,10 +19,39 @@ export default function PerfilUsuarioPage() {
     const [direccion, setDireccion] = useState('')
     const [preview, setPreview] = useState<string | null>(null)
     const [imagen, setImagen] = useState<File | null>(null)
-    const [perfilExistente, setPerfilExistente] = useState(false) // 🆕 Saber si ya existe
+    const [perfilExistente, setPerfilExistente] = useState(false)
 
-    // Cargar perfil al entrar
     useEffect(() => {
+        const cargarPerfil = async () => {
+            const { data, error } = await supabase
+                .from('perfiles')
+                .select('*')
+                .eq('id', user?.id)
+                .maybeSingle()
+
+            if (error) {
+                toast.error('Error al cargar perfil')
+                return
+            }
+
+            if (data) {
+                setNombre(data.nombre || '')
+                setCorreo(user?.email || '')
+                setTelefono(data.telefono || '')
+                setDireccion(data.direccion || '')
+                if (data.foto) {
+                    setPreview(data.foto)
+                }
+                setPerfilExistente(true)
+            } else {
+                setNombre('')
+                setCorreo(user?.email || '')
+                setTelefono('')
+                setDireccion('')
+                setPerfilExistente(false)
+            }
+        }
+
         if (!loading && !user) {
             router.push('/login')
         }
@@ -30,38 +59,6 @@ export default function PerfilUsuarioPage() {
             cargarPerfil()
         }
     }, [user, loading, router])
-
-    const cargarPerfil = async () => {
-        const { data, error } = await supabase
-            .from('perfiles')
-            .select('*')
-            .eq('id', user?.id)
-            .maybeSingle() // 🆕 permitir si no existe
-
-        if (error) {
-            toast.error('Error al cargar perfil')
-            return
-        }
-
-        if (data) {
-            // Perfil encontrado
-            setNombre(data.nombre || '')
-            setCorreo(user?.email || '')
-            setTelefono(data.telefono || '')
-            setDireccion(data.direccion || '')
-            if (data.foto) {
-                setPreview(data.foto)
-            }
-            setPerfilExistente(true) // 🆕
-        } else {
-            // No existe perfil (nuevo usuario)
-            setNombre('')
-            setCorreo(user?.email || '')
-            setTelefono('')
-            setDireccion('')
-            setPerfilExistente(false) // 🆕
-        }
-    }
 
     const handleImagenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
@@ -77,17 +74,16 @@ export default function PerfilUsuarioPage() {
         e.preventDefault()
         if (!user?.id) return
 
-        let imageUrl = preview // usa el actual
+        let imageUrl = preview
         if (imagen) {
             const fileExt = imagen.name.split('.').pop()
             const fileName = `${uuidv4()}.${fileExt}`
             const filePath = `perfil/${fileName}`
 
             const { error: uploadError } = await supabase
-            .storage
-            .from('perfil') // ← este sí es un bucket, correcto
-            .upload(filePath, imagen)
-        
+                .storage
+                .from('perfil')
+                .upload(filePath, imagen)
 
             if (uploadError) {
                 toast.error('Error al subir imagen')
@@ -98,21 +94,20 @@ export default function PerfilUsuarioPage() {
             imageUrl = data.publicUrl
         }
 
-        // 🆕 Aquí el Upsert seguro
         const { error } = await supabase.from('perfiles').upsert({
             id: user.id,
             nombre,
             telefono,
             direccion,
             foto: imageUrl,
-            email: user.email, // opcional si lo guardas en tabla
+            email: user.email,
         })
 
         if (error) {
             toast.error('Error al actualizar perfil')
         } else {
             toast.success(perfilExistente ? 'Perfil actualizado ✅' : 'Perfil creado correctamente ✅')
-            setPerfilExistente(true) // actualizamos el estado
+            setPerfilExistente(true)
         }
     }
 
@@ -122,7 +117,6 @@ export default function PerfilUsuarioPage() {
         <main className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl mx-auto bg-white shadow-md rounded-xl p-8 space-y-6">
 
-                {/* Botón Regresar */}
                 <div className="text-left">
                     <BotonRegresar />
                 </div>
@@ -133,7 +127,6 @@ export default function PerfilUsuarioPage() {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
 
-                    {/* Imagen */}
                     <div>
                         <label className="block text-sm font-medium text-black">Foto de perfil</label>
                         <input
@@ -154,7 +147,6 @@ export default function PerfilUsuarioPage() {
                         )}
                     </div>
 
-                    {/* Nombre */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Nombre completo</label>
                         <input
@@ -166,7 +158,6 @@ export default function PerfilUsuarioPage() {
                         />
                     </div>
 
-                    {/* Correo */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Correo electrónico</label>
                         <input
@@ -177,7 +168,6 @@ export default function PerfilUsuarioPage() {
                         />
                     </div>
 
-                    {/* Teléfono */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Teléfono</label>
                         <input
@@ -188,7 +178,6 @@ export default function PerfilUsuarioPage() {
                         />
                     </div>
 
-                    {/* Dirección */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Dirección</label>
                         <textarea

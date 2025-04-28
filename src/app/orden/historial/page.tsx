@@ -7,10 +7,23 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { FaShoppingCart, FaSpinner } from 'react-icons/fa'
 
+// 🛠 Tipo correcto para las órdenes
+interface Orden {
+    id: string
+    mascota_id: string
+    tipo_placa: 'qr' | 'gps'
+    precio: number
+    estatus: 'pendiente' | 'pagado' | 'enviado'
+    fecha: string
+    mascotas?: {
+        nombre: string
+    }[] | null  // 👈 Aquí lo cambiamos: es ARRAY de objetos ahora
+}
+
 export default function OrdenHistorialPage() {
     const { user, loading } = useUser()
     const router = useRouter()
-    const [ordenes, setOrdenes] = useState<any[]>([])
+    const [ordenes, setOrdenes] = useState<Orden[]>([])
     const [loadingOrdenes, setLoadingOrdenes] = useState(true)
 
     useEffect(() => {
@@ -20,25 +33,24 @@ export default function OrdenHistorialPage() {
                 return
             }
 
-            // Buscar solo órdenes del usuario logueado
             const { data, error } = await supabase
                 .from('ordenes_placas')
                 .select(`
-                    id,
-                    mascota_id,
-                    tipo_placa,
-                    precio,
-                    estatus,
-                    fecha,
-                    mascotas (nombre)
-                `)
+          id,
+          mascota_id,
+          tipo_placa,
+          precio,
+          estatus,
+          fecha,
+          mascotas (nombre)
+        `)
                 .eq('usuario_id', user.id)
                 .order('fecha', { ascending: false })
 
             if (error) {
                 console.error('Error cargando órdenes:', error)
             } else {
-                setOrdenes(data)
+                setOrdenes(data as Orden[])
             }
             setLoadingOrdenes(false)
         }
@@ -89,7 +101,8 @@ export default function OrdenHistorialPage() {
                         <div key={orden.id} className="bg-white p-6 rounded-xl shadow space-y-4">
                             <div>
                                 <p className="font-bold text-gray-800">Mascota:</p>
-                                <p>{orden.mascotas?.nombre || 'Sin nombre'}</p>
+                                <p>{orden.mascotas?.[0]?.nombre || 'Sin nombre'}</p>
+
                             </div>
                             <div>
                                 <p className="font-bold text-gray-800">Tipo de placa:</p>
@@ -101,14 +114,13 @@ export default function OrdenHistorialPage() {
                             </div>
                             <div>
                                 <p className="font-bold text-gray-800">Estado:</p>
-                                <p>{orden.estatus === 'pendiente' ? '⏳ Pendiente' : '✅ Pagado'}</p>
+                                <p>{orden.estatus === 'pendiente' ? '⏳ Pendiente' : orden.estatus === 'pagado' ? '✅ Pagado' : '🚚 Enviado'}</p>
                             </div>
                             <div>
                                 <p className="font-bold text-gray-800">Fecha:</p>
                                 <p>{new Date(orden.fecha).toLocaleDateString('es-MX')}</p>
                             </div>
 
-                            {/* Botón Ver Detalles */}
                             <Link
                                 href={`/orden/${orden.id}`}
                                 className="block bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-lg font-semibold transition"
