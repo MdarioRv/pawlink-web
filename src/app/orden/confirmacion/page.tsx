@@ -1,13 +1,13 @@
 'use client'
+
+import { Suspense, useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { useEffect, useState, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import { useUser } from '@/hooks/useUser'
 import toast from 'react-hot-toast'
 import BotonRegresar from '@/components/back'
 
-// 🛠 Define tipos de datos
 interface Mascota {
     nombre: string
 }
@@ -27,6 +27,14 @@ interface Orden {
 }
 
 export default function ConfirmacionOrdenPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen flex items-center justify-center">Cargando...</main>}>
+      <ConfirmacionOrdenPageContent />
+    </Suspense>
+  )
+}
+
+function ConfirmacionOrdenPageContent() {
     const searchParams = useSearchParams()
     const ordenId = searchParams.get('id')
     const { user, loading } = useUser()
@@ -41,18 +49,18 @@ export default function ConfirmacionOrdenPage() {
         const { data, error } = await supabase
             .from('ordenes_placas')
             .select(`
-        id,
-        mascota_id,
-        tipo_placa,
-        precio,
-        estatus,
-        direccion_calle,
-        direccion_colonia,
-        direccion_ciudad,
-        direccion_estado,
-        direccion_codigo_postal,
-        mascotas (nombre)
-      `)
+                id,
+                mascota_id,
+                tipo_placa,
+                precio,
+                estatus,
+                direccion_calle,
+                direccion_colonia,
+                direccion_ciudad,
+                direccion_estado,
+                direccion_codigo_postal,
+                mascotas (nombre)
+            `)
             .eq('id', ordenId)
             .eq('usuario_id', user?.id)
             .maybeSingle()
@@ -73,7 +81,7 @@ export default function ConfirmacionOrdenPage() {
     useEffect(() => {
         if (!loading && !user) router.push('/login')
         if (user && ordenId) cargarOrden()
-    }, [user, ordenId, loading, cargarOrden, router]) // ← Ahora dependencias correctas
+    }, [user, ordenId, loading, cargarOrden, router])
 
     const handleProcederPago = () => {
         router.push(`/orden/pago?id=${ordenId}`)
@@ -88,30 +96,24 @@ export default function ConfirmacionOrdenPage() {
     return (
         <main className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl mx-auto bg-white shadow-md rounded-xl p-8 space-y-8 text-center">
-
                 <div className="text-left">
                     <BotonRegresar />
                 </div>
-
                 <h1 className="text-3xl font-bold text-blue-700">Confirmación de Pedido 🛒</h1>
 
-                {/* Resumen Producto */}
                 <div className="space-y-4 text-left">
                     <div>
                         <p className="font-bold text-gray-700">Placa:</p>
                         <p className="text-gray-600">{orden.tipo_placa === 'qr' ? 'Placa QR Básica' : 'Placa QR + GPS Premium'}</p>
                     </div>
-
                     <div>
                         <p className="font-bold text-gray-700">Para Mascota:</p>
                         <p className="text-gray-600">{mascota?.nombre || 'Sin nombre'}</p>
                     </div>
-
                     <div>
                         <p className="font-bold text-gray-700">Modelo Seleccionado:</p>
                         <p className="text-gray-600">{modeloSeleccionado ? modeloSeleccionado.toUpperCase() : 'No seleccionado'}</p>
                     </div>
-
                     <div>
                         <p className="font-bold text-gray-700">Dirección de Envío:</p>
                         <p className="text-gray-600">
@@ -120,7 +122,6 @@ export default function ConfirmacionOrdenPage() {
                             , {orden.direccion_ciudad}, {orden.direccion_estado}, CP {orden.direccion_codigo_postal}
                         </p>
                     </div>
-
                     <div className="font-bold text-lg text-gray-900 mt-6">
                         Total a Pagar: <span className="text-blue-700">${orden.precio} MXN</span>
                     </div>
@@ -141,7 +142,6 @@ export default function ConfirmacionOrdenPage() {
                         Editar Orden
                     </Link>
                 </div>
-
             </div>
         </main>
     )
