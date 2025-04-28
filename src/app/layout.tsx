@@ -8,9 +8,12 @@ import { Toaster } from 'react-hot-toast'
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] })
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] })
 
-export const metadata: Metadata = {
-  title: 'PawLink',
-  description: 'Placa inteligente con QR y GPS para mascotas',
+export const metadata = {
+  title: 'PAWLINK', // cambia el título también
+  description: 'Plataforma de identificación y rastreo para mascotas 🐾',
+  icons: {
+    icon: 'logo.png', // el path a tu nuevo icono
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
