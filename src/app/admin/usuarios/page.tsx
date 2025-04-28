@@ -64,9 +64,14 @@ export default function UsuariosAdminPage() {
                 return
             }
 
-            const adminIds = adminsData.map((admin: { id: string }) => admin.id)
+            const adminIds = adminsData.map((admin) => admin.id)
 
-            const usuariosConRol: Usuario[] = perfilesData.map((perfil: any) => ({
+            const usuariosConRol: Usuario[] = perfilesData.map((perfil: {
+                id: string
+                nombre: string | null
+                email: string
+                creado_en: string
+            }) => ({
                 id: perfil.id,
                 nombre: perfil.nombre,
                 email: perfil.email,
