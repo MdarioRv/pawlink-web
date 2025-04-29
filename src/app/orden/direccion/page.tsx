@@ -1,13 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import { useUser } from '@/hooks/useUser'
 import toast from 'react-hot-toast'
 import BotonRegresar from '@/components/back'
 
-export default function DireccionOrdenPage() {
+export const dynamic = 'force-dynamic' // muy importante
+
+function DireccionOrdenPage() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const ordenId = searchParams.get('id')
@@ -116,6 +118,8 @@ export default function DireccionOrdenPage() {
                 <p className="text-gray-600 text-center">Ingresa la dirección donde recibirás tu placa PAWLINK.</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Inputs */}
+                    {/* Nombre */}
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Nombre del receptor *</label>
                         <input
@@ -126,6 +130,8 @@ export default function DireccionOrdenPage() {
                             className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
+
+                    {/* Teléfono */}
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Teléfono *</label>
                         <input
@@ -136,6 +142,8 @@ export default function DireccionOrdenPage() {
                             className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
+
+                    {/* Calle */}
                     <div className="md:col-span-2">
                         <label className="block mb-1 text-sm font-medium text-gray-700">Calle y número *</label>
                         <input
@@ -146,6 +154,8 @@ export default function DireccionOrdenPage() {
                             className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
+
+                    {/* Colonia */}
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Colonia (opcional)</label>
                         <input
@@ -156,6 +166,8 @@ export default function DireccionOrdenPage() {
                             className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
+
+                    {/* Ciudad */}
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Ciudad *</label>
                         <input
@@ -166,6 +178,8 @@ export default function DireccionOrdenPage() {
                             className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
+
+                    {/* Estado */}
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Estado / Provincia *</label>
                         <input
@@ -176,6 +190,8 @@ export default function DireccionOrdenPage() {
                             className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
+
+                    {/* Código Postal */}
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Código Postal *</label>
                         <input
@@ -198,5 +214,13 @@ export default function DireccionOrdenPage() {
                 </div>
             </div>
         </main>
+    )
+}
+
+export default function Page() {
+    return (
+        <Suspense fallback={<div>Cargando dirección...</div>}>
+            <DireccionOrdenPage />
+        </Suspense>
     )
 }
