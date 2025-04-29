@@ -116,7 +116,6 @@ export default function DireccionOrdenPage() {
                 <p className="text-gray-600 text-center">Ingresa la dirección donde recibirás tu placa PAWLINK.</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Nombre */}
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Nombre del receptor *</label>
                         <input
@@ -127,8 +126,6 @@ export default function DireccionOrdenPage() {
                             className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
-
-                    {/* Teléfono */}
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Teléfono *</label>
                         <input
@@ -139,8 +136,6 @@ export default function DireccionOrdenPage() {
                             className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
-
-                    {/* Calle */}
                     <div className="md:col-span-2">
                         <label className="block mb-1 text-sm font-medium text-gray-700">Calle y número *</label>
                         <input
@@ -151,8 +146,6 @@ export default function DireccionOrdenPage() {
                             className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
-
-                    {/* Colonia */}
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Colonia (opcional)</label>
                         <input
@@ -163,8 +156,6 @@ export default function DireccionOrdenPage() {
                             className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
-
-                    {/* Ciudad */}
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Ciudad *</label>
                         <input
@@ -175,8 +166,6 @@ export default function DireccionOrdenPage() {
                             className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
-
-                    {/* Estado */}
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Estado / Provincia *</label>
                         <input
@@ -187,8 +176,6 @@ export default function DireccionOrdenPage() {
                             className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
-
-                    {/* Código Postal */}
                     <div>
                         <label className="block mb-1 text-sm font-medium text-gray-700">Código Postal *</label>
                         <input
@@ -201,7 +188,6 @@ export default function DireccionOrdenPage() {
                     </div>
                 </div>
 
-                {/* Botón guardar */}
                 <div className="text-center pt-6">
                     <button
                         onClick={handleGuardar}
