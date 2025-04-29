@@ -1,4 +1,5 @@
 'use client'
+
 import { useRef } from 'react'
 import QRCode from 'react-qr-code'
 import { toPng } from 'html-to-image'
@@ -10,7 +11,10 @@ interface QRCodeMascotaProps {
 
 export default function QRCodeMascota({ id, nombre }: QRCodeMascotaProps) {
     const qrRef = useRef<HTMLDivElement>(null)
-    const url = `https://pawlink.vercel.app/mascota/${id}`
+
+    // 👉 Obtiene el dominio actual dinámicamente
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://pawlink.vercel.app'
+    const url = `${origin}/mascota/${id}`
 
     const descargarQR = async () => {
         if (qrRef.current) {
@@ -27,7 +31,7 @@ export default function QRCodeMascota({ id, nombre }: QRCodeMascotaProps) {
             <div ref={qrRef} className="inline-block p-4 bg-white rounded shadow">
                 <QRCode value={url} size={180} />
             </div>
-            <p className="text-sm text-gray-600">{url}</p>
+            <p className="text-sm text-gray-600 break-all">{url}</p>
             <button
                 onClick={descargarQR}
                 className="mt-2 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
