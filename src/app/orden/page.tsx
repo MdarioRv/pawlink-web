@@ -1,19 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { Suspense, useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import { useUser } from '@/hooks/useUser'
 import toast from 'react-hot-toast'
 import BotonRegresar from '@/components/back'
 
-// 🛠 Nuevo tipo
+export const dynamic = 'force-dynamic'
+
 interface MascotaUsuario {
     id: string
     nombre: string
 }
 
-export default function OrdenarPlacaPage() {
+function OrdenarPlacaPage() {
     const searchParams = useSearchParams()
     const isUpgrade = searchParams.get('upgrade') === 'gps'
     const idMascota = searchParams.get('id')
@@ -207,7 +208,7 @@ export default function OrdenarPlacaPage() {
                             onClick={handleOrdenar}
                             disabled={yaTieneOrden}
                             className={`px-8 py-3 rounded-lg font-semibold transition text-white 
-                  ${yaTieneOrden ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                                ${yaTieneOrden ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
                         >
                             {seleccion === 'qr'
                                 ? 'Ordenar Placa QR Básica'
@@ -223,5 +224,13 @@ export default function OrdenarPlacaPage() {
                 )}
             </div>
         </main>
+    )
+}
+
+export default function Page() {
+    return (
+        <Suspense fallback={<div>Cargando selección de tipo de placa...</div>}>
+            <OrdenarPlacaPage />
+        </Suspense>
     )
 }

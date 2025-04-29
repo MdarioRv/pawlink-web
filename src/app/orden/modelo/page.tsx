@@ -1,22 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import Image from 'next/image' // 👈 Importa Image de Next.js
+import Image from 'next/image'
 
-const modelosDisponibles = [
-    { id: 'hueso', nombre: 'Hueso', imagen: '/modelo-hueso.png' },
-    { id: 'redondo', nombre: 'Redondo', imagen: '/modelo-redondo.png' },
-    { id: 'corazon', nombre: 'Corazón', imagen: '/modelo-corazon.png' },
-]
+export const dynamic = 'force-dynamic' // Muy importante para forzar dinámica
 
-export default function SeleccionarModeloPage() {
+function SeleccionarModeloPage() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const ordenId = searchParams.get('id')
+
+    const modelosDisponibles = [
+        { id: 'hueso', nombre: 'Hueso', imagen: '/modelo-hueso.png' },
+        { id: 'redondo', nombre: 'Redondo', imagen: '/modelo-redondo.png' },
+        { id: 'corazon', nombre: 'Corazón', imagen: '/modelo-corazon.png' },
+    ]
 
     const [modeloSeleccionado, setModeloSeleccionado] = useState<string | null>(null)
 
@@ -64,8 +66,9 @@ export default function SeleccionarModeloPage() {
                     {modelosDisponibles.map((modelo) => (
                         <div
                             key={modelo.id}
-                            className={`border rounded-lg p-4 bg-white shadow cursor-pointer hover:ring-2 hover:ring-blue-500 transition ${modeloSeleccionado === modelo.id ? 'ring-2 ring-blue-600' : ''
-                                }`}
+                            className={`border rounded-lg p-4 bg-white shadow cursor-pointer hover:ring-2 hover:ring-blue-500 transition ${
+                                modeloSeleccionado === modelo.id ? 'ring-2 ring-blue-600' : ''
+                            }`}
                             onClick={() => setModeloSeleccionado(modelo.id)}
                         >
                             <Image
@@ -91,5 +94,13 @@ export default function SeleccionarModeloPage() {
 
             </div>
         </main>
+    )
+}
+
+export default function Page() {
+    return (
+        <Suspense fallback={<div>Cargando selección de modelo...</div>}>
+            <SeleccionarModeloPage />
+        </Suspense>
     )
 }
