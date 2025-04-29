@@ -9,7 +9,7 @@ import UbicacionMapa from '@/components/UbicacionMapa'
 import { FaPaw } from 'react-icons/fa'
 import BotonRegresar from '@/components/back'
 
-// ✅ Tipos correctos
+// ✅ Tipos
 interface Mascota {
     id: string
     nombre: string
@@ -58,10 +58,10 @@ export default function MascotaPublicaPage() {
 
             setMascota(mascotaData as Mascota)
 
-            // 2. Cargar datos del dueño
+            // 2. Cargar datos del dueño desde la VISTA (NO la tabla perfiles)
             const { data: perfilData } = await supabase
-                .from('perfiles')
-                .select('nombre, telefono, direccion, foto, email')
+                .from('perfiles_publicos')
+                .select('nombre, telefono, email')
                 .eq('id', mascotaData.dueño_id)
                 .single()
 
@@ -111,7 +111,6 @@ export default function MascotaPublicaPage() {
     return (
         <main className="min-h-screen bg-blue-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-8 space-y-6">
-
                 {/* Botón Regresar */}
                 <div className="text-left">
                     <BotonRegresar />
@@ -166,7 +165,6 @@ export default function MascotaPublicaPage() {
                         <p className="font-medium">📧 {dueño.email}</p>
                     </div>
                 )}
-
             </div>
         </main>
     )
