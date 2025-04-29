@@ -12,8 +12,12 @@ interface QRCodeMascotaProps {
 export default function QRCodeMascota({ id, nombre }: QRCodeMascotaProps) {
     const qrRef = useRef<HTMLDivElement>(null)
 
-    // 👉 Obtiene el dominio actual dinámicamente
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://pawlink.vercel.app'
+    // Usa variable de entorno para el dominio
+    const origin =
+        typeof window !== 'undefined'
+            ? window.location.origin
+            : process.env.NEXT_PUBLIC_BASE_URL || 'https://pawlink-web.vercel.app'
+
     const url = `${origin}/mascota/${id}`
 
     const descargarQR = async () => {
