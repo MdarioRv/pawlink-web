@@ -16,14 +16,16 @@ export default function RegistroMascotaPage() {
     const [nombre, setNombre] = useState('')
     const [tipo, setTipo] = useState('')
     const [raza, setRaza] = useState('')
-    const [edad, setEdad] = useState<number>(0)
     const [salud, setSalud] = useState('')
     const [imagen, setImagen] = useState<File | null>(null)
     const [preview, setPreview] = useState<string | null>(null)
 
+    const [edadValor, setEdadValor] = useState<number>(0)
+    const [edadUnidad, setEdadUnidad] = useState<'años' | 'meses'>('años')
+
     const handleImagenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
-        const maxSizeMB = 2
+        const maxSizeMB = 3
         const validTypes = ['image/jpeg', 'image/png', 'image/webp']
 
         if (!file) return
@@ -43,7 +45,6 @@ export default function RegistroMascotaPage() {
         setPreview(URL.createObjectURL(file))
     }
 
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
@@ -51,6 +52,8 @@ export default function RegistroMascotaPage() {
             toast.error('Usuario no autenticado')
             return
         }
+
+        const edadFinal = edadUnidad === 'años' ? edadValor * 12 : edadValor
 
         let imageUrl = ''
         if (imagen) {
@@ -71,17 +74,15 @@ export default function RegistroMascotaPage() {
             imageUrl = data.publicUrl
         }
 
-        const { error } = await supabase.from('mascotas').insert([
-            {
-                nombre,
-                tipo,
-                raza,
-                edad,
-                salud,
-                imagen: imageUrl,
-                dueño_id: user.id,
-            },
-        ])
+        const { error } = await supabase.from('mascotas').insert([{
+            nombre,
+            tipo,
+            raza,
+            edad: edadFinal,
+            salud,
+            imagen: imageUrl,
+            dueño_id: user.id,
+        }])
 
         if (error) {
             toast.error('Error al registrar mascota')
@@ -94,7 +95,6 @@ export default function RegistroMascotaPage() {
     return (
         <main className="min-h-screen bg-blue-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl mx-auto bg-white shadow-md rounded-xl p-8 space-y-6">
-                {/* Botón Regresar */}
                 <div className="text-left">
                     <BotonRegresar />
                 </div>
@@ -109,7 +109,7 @@ export default function RegistroMascotaPage() {
                             value={nombre}
                             onChange={(e) => setNombre(e.target.value)}
                             required
-                            className="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
+                            className="mt-1 w-full px-4 py-2 border rounded-lg text-black"
                         />
                     </div>
 
@@ -119,7 +119,7 @@ export default function RegistroMascotaPage() {
                             value={tipo}
                             onChange={(e) => setTipo(e.target.value)}
                             required
-                            className="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
+                            className="mt-1 w-full px-4 py-2 border rounded-lg text-black"
                         >
                             <option value="">Selecciona una opción</option>
                             <option value="Perro">Perro</option>
@@ -134,19 +134,30 @@ export default function RegistroMascotaPage() {
                             type="text"
                             value={raza}
                             onChange={(e) => setRaza(e.target.value)}
-                            className="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
+                            className="mt-1 w-full px-4 py-2 border rounded-lg text-black"
                         />
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Edad</label>
-                        <input
-                            type="number"
-                            value={edad}
-                            onChange={(e) => setEdad(Number(e.target.value))}
-                            min={0}
-                            className="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
-                        />
+                        <div className="flex gap-2 mt-1">
+                            <input
+                                type="number"
+                                value={edadValor}
+                                onChange={(e) => setEdadValor(Number(e.target.value))}
+                                min={0}
+                                required
+                                className="w-2/3 px-4 py-2 border rounded-lg text-black"
+                            />
+                            <select
+                                value={edadUnidad}
+                                onChange={(e) => setEdadUnidad(e.target.value as 'años' | 'meses')}
+                                className="w-1/3 px-2 py-2 border rounded-lg text-black"
+                            >
+                                <option value="años">Años</option>
+                                <option value="meses">Meses</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div>
@@ -155,7 +166,7 @@ export default function RegistroMascotaPage() {
                             value={salud}
                             onChange={(e) => setSalud(e.target.value)}
                             required
-                            className="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
+                            className="mt-1 w-full px-4 py-2 border rounded-lg text-black"
                         >
                             <option value="">Selecciona una opción</option>
                             <option value="Salud excelente">Salud excelente</option>
@@ -164,15 +175,7 @@ export default function RegistroMascotaPage() {
                             <option value="Requiere medicación">Requiere medicación</option>
                             <option value="Otro">Otro</option>
                         </select>
-
-                        {salud === 'Otro' && (
-                            <textarea
-                                placeholder="Especifica el estado de salud..."
-                                className="mt-2 w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
-                            />
-                        )}
                     </div>
-
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Foto</label>
@@ -182,6 +185,7 @@ export default function RegistroMascotaPage() {
                             onChange={handleImagenChange}
                             className="mt-2 text-gray-400"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Tamaño máximo permitido: 3MB. Formatos: JPG, PNG, WebP.</p>
 
                         {preview && (
                             <Image
