@@ -16,16 +16,16 @@ export default function RegistroMascotaPage() {
     const [nombre, setNombre] = useState('')
     const [tipo, setTipo] = useState('')
     const [raza, setRaza] = useState('')
+    const [edadAnios, setEdadAnios] = useState(0)
+    const [edadMeses, setEdadMeses] = useState(0)
     const [salud, setSalud] = useState('')
     const [imagen, setImagen] = useState<File | null>(null)
     const [preview, setPreview] = useState<string | null>(null)
 
-    const [edadValor, setEdadValor] = useState<number>(0)
-    const [edadUnidad, setEdadUnidad] = useState<'años' | 'meses'>('años')
+    const maxMB = 3
 
     const handleImagenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
-        const maxSizeMB = 3
         const validTypes = ['image/jpeg', 'image/png', 'image/webp']
 
         if (!file) return
@@ -36,8 +36,8 @@ export default function RegistroMascotaPage() {
         }
 
         const fileSizeMB = file.size / (1024 * 1024)
-        if (fileSizeMB > maxSizeMB) {
-            toast.error(`La imagen excede el límite de ${maxSizeMB} MB`)
+        if (fileSizeMB > maxMB) {
+            toast.error(`La imagen excede el límite de ${maxMB} MB.`)
             return
         }
 
@@ -53,7 +53,18 @@ export default function RegistroMascotaPage() {
             return
         }
 
-        const edadFinal = edadUnidad === 'años' ? edadValor * 12 : edadValor
+        if (edadMeses > 11) {
+            toast.error('La cantidad máxima de meses es 11')
+            return
+        }
+
+        let edadFinal = edadAnios
+        let unidadEdad: 'años' | 'meses' = 'años'
+
+        if (edadAnios === 0 && edadMeses > 0) {
+            edadFinal = edadMeses
+            unidadEdad = 'meses'
+        }
 
         let imageUrl = ''
         if (imagen) {
@@ -79,6 +90,7 @@ export default function RegistroMascotaPage() {
             tipo,
             raza,
             edad: edadFinal,
+            unidad_edad: unidadEdad,
             salud,
             imagen: imageUrl,
             dueño_id: user.id,
@@ -138,25 +150,28 @@ export default function RegistroMascotaPage() {
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Edad</label>
-                        <div className="flex gap-2 mt-1">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Edad (Años)</label>
                             <input
                                 type="number"
-                                value={edadValor}
-                                onChange={(e) => setEdadValor(Number(e.target.value))}
+                                value={edadAnios}
+                                onChange={(e) => setEdadAnios(Number(e.target.value))}
                                 min={0}
-                                required
-                                className="w-2/3 px-4 py-2 border rounded-lg text-black"
+                                className="mt-1 w-full px-4 py-2 border rounded-lg text-black"
                             />
-                            <select
-                                value={edadUnidad}
-                                onChange={(e) => setEdadUnidad(e.target.value as 'años' | 'meses')}
-                                className="w-1/3 px-2 py-2 border rounded-lg text-black"
-                            >
-                                <option value="años">Años</option>
-                                <option value="meses">Meses</option>
-                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Edad (Meses)</label>
+                            <input
+                                type="number"
+                                value={edadMeses}
+                                onChange={(e) => setEdadMeses(Math.min(11, Number(e.target.value)))}
+                                min={0}
+                                max={11}
+                                className="mt-1 w-full px-4 py-2 border rounded-lg text-black"
+                            />
                         </div>
                     </div>
 
@@ -178,15 +193,13 @@ export default function RegistroMascotaPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Foto</label>
+                        <label className="block text-sm font-medium text-gray-700">Foto (máximo 3 MB)</label>
                         <input
                             type="file"
                             accept="image/png, image/jpeg, image/webp"
                             onChange={handleImagenChange}
                             className="mt-2 text-gray-400"
                         />
-                        <p className="text-xs text-gray-500 mt-1">Tamaño máximo permitido: 3MB. Formatos: JPG, PNG, WebP.</p>
-
                         {preview && (
                             <Image
                                 src={preview}

@@ -16,6 +16,7 @@ interface Mascota {
     tipo: string
     raza: string
     edad: number
+    unidad_edad?: 'años' | 'meses'
     salud: string
     imagen: string
     dueño_id: string
@@ -58,7 +59,7 @@ export default function MascotaPublicaPage() {
 
             setMascota(mascotaData as Mascota)
 
-            // 2. Cargar datos del dueño desde la VISTA (NO la tabla perfiles)
+            // 2. Cargar datos del dueño
             const { data: perfilData } = await supabase
                 .from('perfiles_publicos')
                 .select('nombre, telefono, email')
@@ -138,7 +139,10 @@ export default function MascotaPublicaPage() {
                 <div className="space-y-2 text-gray-700 text-base">
                     <p><strong>Tipo:</strong> {mascota.tipo}</p>
                     <p><strong>Raza:</strong> {mascota.raza}</p>
-                    <p><strong>Edad:</strong> {mascota.edad} años</p>
+                    <p>
+                        <strong>Edad:</strong>{' '}
+                        {mascota.edad} {mascota.unidad_edad === 'meses' ? 'meses' : 'años'}
+                    </p>
                     <p><strong>Estado de salud:</strong> {mascota.salud}</p>
                 </div>
 
