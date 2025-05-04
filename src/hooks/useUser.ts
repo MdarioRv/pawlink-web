@@ -9,16 +9,20 @@ export function useUser() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        const getSession = async () => {
-            const { data } = await supabase.auth.getSession()
-            setSession(data.session)
+        const syncSession = async () => {
+            const { data, error } = await supabase.auth.getSession()
+            if (error || !data.session) {
+                setSession(null)
+            } else {
+                setSession(data.session)
+            }
             setLoading(false)
         }
 
-        getSession()
+        syncSession()
 
-        const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session)
+        const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+            setSession(newSession || null)
         })
 
         return () => {
