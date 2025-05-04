@@ -18,7 +18,6 @@ export default function Header() {
     useEffect(() => {
         const verificarAdmin = async () => {
             if (!user) return
-
             const { data, error } = await supabase
                 .from('admin_users')
                 .select('id')
@@ -32,7 +31,6 @@ export default function Header() {
 
         const cargarOrdenesPendientes = async () => {
             if (!user) return
-
             const { data, error } = await supabase
                 .from('ordenes_placas')
                 .select('id')
@@ -46,6 +44,13 @@ export default function Header() {
 
         verificarAdmin()
         cargarOrdenesPendientes()
+    }, [user])
+
+    useEffect(() => {
+        if (!user) {
+            setIsAdmin(false)
+            setOrdenesPendientes(0)
+        }
     }, [user])
 
     const handleLogout = async () => {
@@ -70,7 +75,7 @@ export default function Header() {
                         PAWLINK
                     </Link>
 
-                    {/* Botón hamburguesa (solo móvil) */}
+                    {/* Botón hamburguesa */}
                     <button
                         onClick={() => setMenuOpen(!menuOpen)}
                         className="lg:hidden text-2xl text-blue-600 focus:outline-none"
@@ -78,7 +83,7 @@ export default function Header() {
                         {menuOpen ? <FiX /> : <FiMenu />}
                     </button>
 
-                    {/* Navegación grande (escritorio) */}
+                    {/* Navegación grande */}
                     <nav className="hidden lg:flex items-center gap-6 text-base font-medium">
                         <Link href="/" className="text-gray-700 hover:text-blue-600 transition">Inicio</Link>
                         <Link href="/Preguntas" className="text-gray-700 hover:text-blue-600 transition">Preguntas</Link>
@@ -94,7 +99,6 @@ export default function Header() {
                             </Link>
                         )}
 
-                        {/* Carrito de órdenes pendientes */}
                         {ordenesPendientes > 0 && (
                             <Link href="/orden/historial" className="relative text-blue-600 hover:text-blue-700">
                                 <FiShoppingCart className="text-2xl" />
@@ -105,7 +109,7 @@ export default function Header() {
                         )}
                     </nav>
 
-                    {/* Acciones grandes (escritorio) */}
+                    {/* Acciones grandes */}
                     <div className="hidden lg:flex items-center gap-4">
                         <Link
                             href="/orden"
@@ -134,7 +138,7 @@ export default function Header() {
                 </div>
             </div>
 
-            {/* Menú móvil animado */}
+            {/* Menú móvil */}
             <div
                 className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${menuOpen ? 'max-h-96 opacity-100 translate-y-0' : 'max-h-0 opacity-0 -translate-y-2'}`}
             >
@@ -153,7 +157,6 @@ export default function Header() {
                         </Link>
                     )}
 
-                    {/* Carrito de órdenes pendientes en mobile */}
                     {ordenesPendientes > 0 && (
                         <Link href="/orden/historial" className="flex items-center gap-2 text-blue-600 hover:text-blue-700" onClick={() => setMenuOpen(false)}>
                             <FiShoppingCart className="text-xl" />

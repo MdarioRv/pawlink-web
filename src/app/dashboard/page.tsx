@@ -155,7 +155,7 @@ export default function DashboardPage() {
                         <DashboardAction href="/mascota/registro" icon={<FaPlus />} label="Registrar Mascota" color="blue" />
                         <DashboardAction href="/perfil/usuario" icon={<FaUserCircle />} label="Mi Perfil" color="gray" />
                         <DashboardAction href="/membresia" icon={<FaStar />} label="Plan Premium" color="yellow" />
-                        <DashboardAction href="/chatbot" icon={<FaBell />} label="Chat de Ayuda" color="green" />
+                        <DashboardAction href="/ayuda" icon={<FaBell />} label="Chat de Ayuda" color="green" />
                         <DashboardAction href="/mis-qr" icon={<FaQrcode />} label="Mis Códigos QR" color="blue" />
                     </div>
                 </section>
