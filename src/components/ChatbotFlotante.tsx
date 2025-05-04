@@ -47,7 +47,7 @@ export default function ChatbotFlotante() {
                 ...prev,
                 { remitente: 'bot', texto: data.respuesta },
             ])
-        } catch (error) {
+        } catch {
             setMensajes((prev) => [
                 ...prev,
                 { remitente: 'bot', texto: '⚠️ Ocurrió un error al procesar tu pregunta.' },
