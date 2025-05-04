@@ -10,7 +10,7 @@ export async function POST(req: Request) {
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-                'HTTP-Referer': process.env.OPENROUTER_REFERER || 'http://localhost:3000',
+                'HTTP-Referer': 'https://pawlink-web.vercel.app',
             },
             body: JSON.stringify({
                 model: 'deepseek/deepseek-chat-v3-0324:free', // modelo gratuito ✅
