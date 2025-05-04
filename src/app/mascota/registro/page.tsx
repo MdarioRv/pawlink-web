@@ -8,6 +8,8 @@ import { v4 as uuidv4 } from 'uuid'
 import { motion } from 'framer-motion'
 import { FaPaw, FaSpinner } from 'react-icons/fa'
 import Image from 'next/image'
+import toast from 'react-hot-toast'
+
 import BotonRegresar from '@/components/back'
 import InputField from '@/components/form/InputField'
 import SelectField from '@/components/form/SelectField'
@@ -35,13 +37,13 @@ export default function RegistroMascotaPage() {
         if (!file) return
 
         if (!validTypes.includes(file.type)) {
-            alert('Formato inválido. Usa JPG, PNG o WebP.')
+            toast.error('Formato inválido. Usa JPG, PNG o WebP.')
             return
         }
 
         const fileSizeMB = file.size / (1024 * 1024)
         if (fileSizeMB > maxMB) {
-            alert(`La imagen excede el límite de ${maxMB} MB.`)
+            toast.error(`La imagen excede el límite de ${maxMB} MB.`)
             return
         }
 
@@ -51,8 +53,8 @@ export default function RegistroMascotaPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!user) return alert('No estás autenticado.')
-        if (edadMeses > 11) return alert('Máximo 11 meses permitidos.')
+        if (!user) return toast.error('No estás autenticado.')
+        if (edadMeses > 11) return toast.error('Máximo 11 meses permitidos.')
 
         setLoading(true)
 
@@ -74,7 +76,7 @@ export default function RegistroMascotaPage() {
                 .upload(filePath, imagen)
 
             if (uploadError) {
-                alert('Error al subir la imagen.')
+                toast.error('Error al subir la imagen.')
                 setLoading(false)
                 return
             }
@@ -95,10 +97,12 @@ export default function RegistroMascotaPage() {
         }])
 
         if (error) {
-            alert('Error al registrar la mascota.')
+            toast.error('Error al registrar la mascota.')
         } else {
-            alert('Mascota registrada correctamente.')
-            router.push('/dashboard')
+            toast.success('Mascota registrada correctamente.')
+            setTimeout(() => {
+                router.push('/dashboard')
+            }, 400)
         }
 
         setLoading(false)
