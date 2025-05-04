@@ -1,13 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 import { supabase } from '@/lib/supabaseClient'
 import { useUser } from '@/hooks/useUser'
-import toast from 'react-hot-toast'
 import { v4 as uuidv4 } from 'uuid'
+import { motion } from 'framer-motion'
+import { FaPaw, FaSpinner } from 'react-icons/fa'
+import Image from 'next/image'
 import BotonRegresar from '@/components/back'
+import InputField from '@/components/form/InputField'
+import SelectField from '@/components/form/SelectField'
 
 export default function RegistroMascotaPage() {
     const router = useRouter()
@@ -21,23 +24,24 @@ export default function RegistroMascotaPage() {
     const [salud, setSalud] = useState('')
     const [imagen, setImagen] = useState<File | null>(null)
     const [preview, setPreview] = useState<string | null>(null)
+    const [loading, setLoading] = useState(false)
 
+    const inputFileRef = useRef<HTMLInputElement>(null)
     const maxMB = 3
 
     const handleImagenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         const validTypes = ['image/jpeg', 'image/png', 'image/webp']
-
         if (!file) return
 
         if (!validTypes.includes(file.type)) {
-            toast.error('Formato inválido. Solo JPG, PNG o WebP.')
+            alert('Formato inválido. Usa JPG, PNG o WebP.')
             return
         }
 
         const fileSizeMB = file.size / (1024 * 1024)
         if (fileSizeMB > maxMB) {
-            toast.error(`La imagen excede el límite de ${maxMB} MB.`)
+            alert(`La imagen excede el límite de ${maxMB} MB.`)
             return
         }
 
@@ -47,20 +51,13 @@ export default function RegistroMascotaPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        if (!user) return alert('No estás autenticado.')
+        if (edadMeses > 11) return alert('Máximo 11 meses permitidos.')
 
-        if (!user) {
-            toast.error('Usuario no autenticado')
-            return
-        }
-
-        if (edadMeses > 11) {
-            toast.error('La cantidad máxima de meses es 11')
-            return
-        }
+        setLoading(true)
 
         let edadFinal = edadAnios
         let unidadEdad: 'años' | 'meses' = 'años'
-
         if (edadAnios === 0 && edadMeses > 0) {
             edadFinal = edadMeses
             unidadEdad = 'meses'
@@ -68,8 +65,8 @@ export default function RegistroMascotaPage() {
 
         let imageUrl = ''
         if (imagen) {
-            const fileExt = imagen.name.split('.').pop()
-            const fileName = `${uuidv4()}.${fileExt}`
+            const ext = imagen.name.split('.').pop()
+            const fileName = `${uuidv4()}.${ext}`
             const filePath = `mascotas/${fileName}`
 
             const { error: uploadError } = await supabase.storage
@@ -77,7 +74,8 @@ export default function RegistroMascotaPage() {
                 .upload(filePath, imagen)
 
             if (uploadError) {
-                toast.error('Error al subir la imagen')
+                alert('Error al subir la imagen.')
+                setLoading(false)
                 return
             }
 
@@ -97,128 +95,125 @@ export default function RegistroMascotaPage() {
         }])
 
         if (error) {
-            toast.error('Error al registrar mascota')
+            alert('Error al registrar la mascota.')
         } else {
-            toast.success('Mascota registrada correctamente')
+            alert('Mascota registrada correctamente.')
             router.push('/dashboard')
         }
+
+        setLoading(false)
     }
 
     return (
-        <main className="min-h-screen bg-blue-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-2xl mx-auto bg-white shadow-md rounded-xl p-8 space-y-6">
-                <div className="text-left">
+        <main className="min-h-screen bg-gradient-to-br from-blue-100 to-white py-12 px-4">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-8"
+            >
+                <div className="mb-6">
                     <BotonRegresar />
                 </div>
 
-                <h1 className="text-3xl font-bold text-blue-700">Registrar nueva mascota</h1>
+                <h1 className="text-3xl font-extrabold text-blue-700 text-center mb-8">
+                    Registrar nueva mascota 🐶
+                </h1>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Nombre</label>
-                        <input
-                            type="text"
-                            value={nombre}
-                            onChange={(e) => setNombre(e.target.value)}
-                            required
-                            className="mt-1 w-full px-4 py-2 border rounded-lg text-black"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Tipo</label>
-                        <select
-                            value={tipo}
-                            onChange={(e) => setTipo(e.target.value)}
-                            required
-                            className="mt-1 w-full px-4 py-2 border rounded-lg text-black"
+                <form onSubmit={handleSubmit}>
+                    {/* Dropzone con clic funcional */}
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Foto (máx. 3 MB)</label>
+                        <div
+                            onClick={() => inputFileRef.current?.click()}
+                            className="border-2 border-dashed border-blue-300 rounded-lg p-6 text-center bg-blue-50 hover:bg-blue-100 transition cursor-pointer"
                         >
-                            <option value="">Selecciona una opción</option>
-                            <option value="Perro">Perro</option>
-                            <option value="Gato">Gato</option>
-                            <option value="Otro">Otro</option>
-                        </select>
+                            <input
+                                type="file"
+                                ref={inputFileRef}
+                                accept="image/png, image/jpeg, image/webp"
+                                onChange={handleImagenChange}
+                                className="hidden"
+                            />
+                            {preview ? (
+                                <Image
+                                    src={preview}
+                                    alt="Preview mascota"
+                                    width={180}
+                                    height={180}
+                                    className="mx-auto rounded-lg object-cover border"
+                                />
+                            ) : (
+                                <p className="text-blue-600 font-medium">Haz clic o arrastra una imagen aquí</p>
+                            )}
+                        </div>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Raza</label>
-                        <input
-                            type="text"
-                            value={raza}
-                            onChange={(e) => setRaza(e.target.value)}
-                            className="mt-1 w-full px-4 py-2 border rounded-lg text-black"
-                        />
-                    </div>
+                    <InputField
+                        label="Nombre"
+                        value={nombre}
+                        onChange={(e) => setNombre(e.target.value)}
+                        required
+                        placeholder="Ej. Max, Luna..."
+                    />
+
+                    <SelectField
+                        label="Tipo"
+                        value={tipo}
+                        onChange={(e) => setTipo(e.target.value)}
+                        options={['Perro', 'Gato', 'Otro']}
+                        required
+                    />
+
+                    <InputField
+                        label="Raza"
+                        value={raza}
+                        onChange={(e) => setRaza(e.target.value)}
+                        placeholder="Ej. Labrador, Persa..."
+                    />
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Edad (Años)</label>
-                            <input
-                                type="number"
-                                value={edadAnios}
-                                onChange={(e) => setEdadAnios(Number(e.target.value))}
-                                min={0}
-                                className="mt-1 w-full px-4 py-2 border rounded-lg text-black"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Edad (Meses)</label>
-                            <input
-                                type="number"
-                                value={edadMeses}
-                                onChange={(e) => setEdadMeses(Math.min(11, Number(e.target.value)))}
-                                min={0}
-                                max={11}
-                                className="mt-1 w-full px-4 py-2 border rounded-lg text-black"
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Estado de salud</label>
-                        <select
-                            value={salud}
-                            onChange={(e) => setSalud(e.target.value)}
-                            required
-                            className="mt-1 w-full px-4 py-2 border rounded-lg text-black"
-                        >
-                            <option value="">Selecciona una opción</option>
-                            <option value="Salud excelente">Salud excelente</option>
-                            <option value="Vacunado y desparasitado">Vacunado y desparasitado</option>
-                            <option value="Condición especial">Condición especial</option>
-                            <option value="Requiere medicación">Requiere medicación</option>
-                            <option value="Otro">Otro</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Foto (máximo 3 MB)</label>
-                        <input
-                            type="file"
-                            accept="image/png, image/jpeg, image/webp"
-                            onChange={handleImagenChange}
-                            className="mt-2 text-gray-400"
+                        <InputField
+                            label="Edad (años)"
+                            type="number"
+                            value={edadAnios}
+                            onChange={(e) => setEdadAnios(Number(e.target.value))}
+                            min={0}
                         />
-                        {preview && (
-                            <Image
-                                src={preview}
-                                alt="Preview mascota"
-                                width={150}
-                                height={150}
-                                className="mt-4 rounded-lg object-cover border"
-                            />
-                        )}
+                        <InputField
+                            label="Edad (meses)"
+                            type="number"
+                            value={edadMeses}
+                            onChange={(e) => setEdadMeses(Math.min(11, Number(e.target.value)))}
+                            min={0}
+                            max={11}
+                        />
                     </div>
+
+                    <SelectField
+                        label="Estado de salud"
+                        value={salud}
+                        onChange={(e) => setSalud(e.target.value)}
+                        options={[
+                            'Salud excelente',
+                            'Vacunado y desparasitado',
+                            'Condición especial',
+                            'Requiere medicación',
+                            'Otro'
+                        ]}
+                        required
+                    />
 
                     <button
                         type="submit"
-                        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
+                        disabled={loading}
+                        className="mt-8 w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-blue-700 transition disabled:opacity-50"
                     >
-                        Guardar
+                        {loading ? <FaSpinner className="animate-spin" /> : <FaPaw />}
+                        {loading ? 'Guardando...' : 'Guardar Mascota'}
                     </button>
                 </form>
-            </div>
+            </motion.div>
         </main>
     )
 }
