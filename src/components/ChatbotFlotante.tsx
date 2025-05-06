@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { FaComments, FaTimes, FaPaperPlane } from 'react-icons/fa'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useUser } from '@/hooks/useUser'
 
 type Remitente = 'user' | 'bot'
 
@@ -25,21 +26,25 @@ export default function ChatbotFlotante() {
         },
     ])
     const [cargando, setCargando] = useState(false)
+    const { user } = useUser()
+
+    // 👇 Aquí ocultamos todo si no está logueado
+    if (!user) return null
+
 
     const handleEnviar = async () => {
         const textoLimpio = mensaje.trim()
-        if (!textoLimpio || cargando) return
+        if (!textoLimpio || cargando || !user) return
 
         setMensajes((prev) => [...prev, { remitente: 'user', texto: textoLimpio }])
         setMensaje('')
         setCargando(true)
 
-        // Petición al backend
         try {
             const res = await fetch('/api/chatbot', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pregunta: textoLimpio }),
+                body: JSON.stringify({ pregunta: textoLimpio, userId: user.id }),
             })
 
             const data = await res.json()
@@ -57,6 +62,7 @@ export default function ChatbotFlotante() {
         }
     }
 
+
     return (
         <div className="fixed bottom-6 right-6 z-50">
             <AnimatePresence>
@@ -68,7 +74,6 @@ export default function ChatbotFlotante() {
                         exit={{ opacity: 0, y: 20 }}
                         className="w-80 h-[420px] bg-white shadow-2xl rounded-2xl border border-blue-300 flex flex-col overflow-hidden"
                     >
-                        {/* Encabezado */}
                         <div className="flex justify-between items-center px-4 py-2 bg-blue-600 text-white">
                             <h2 className="text-base font-semibold">Asistente PawLink</h2>
                             <button onClick={() => setAbierto(false)} className="hover:text-red-300 transition">
@@ -76,7 +81,6 @@ export default function ChatbotFlotante() {
                             </button>
                         </div>
 
-                        {/* Mensajes */}
                         <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3 bg-blue-50 text-sm">
                             {mensajes.map((m, i) => (
                                 <div
@@ -94,19 +98,19 @@ export default function ChatbotFlotante() {
                             )}
                         </div>
 
-                        {/* Input */}
                         <div className="flex gap-2 items-center p-3 border-t bg-white">
                             <input
                                 type="text"
                                 value={mensaje}
                                 onChange={(e) => setMensaje(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleEnviar()}
-                                placeholder="Escribe tu pregunta..."
-                                className="flex-1 px-3 py-2 text-sm border rounded-lg focus:ring focus:ring-blue-300"
+                                placeholder={user ? 'Escribe tu pregunta...' : 'Inicia sesión para usar el chat'}
+                                disabled={!user}
+                                className="flex-1 px-3 py-2 text-sm border rounded-lg focus:ring focus:ring-blue-300 disabled:opacity-50"
                             />
                             <button
                                 onClick={handleEnviar}
-                                disabled={cargando}
+                                disabled={cargando || !user}
                                 className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full disabled:opacity-50"
                             >
                                 <FaPaperPlane className="w-4 h-4" />
@@ -120,7 +124,8 @@ export default function ChatbotFlotante() {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.9 }}
                         onClick={() => setAbierto(true)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg"
+                        disabled={!user}
+                        className={`p-4 rounded-full shadow-lg ${user ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-300 text-white cursor-not-allowed'}`}
                         aria-label="Abrir chat"
                     >
                         <FaComments className="w-5 h-5" />

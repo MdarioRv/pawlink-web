@@ -1,9 +1,40 @@
-// /app/api/chatbot/route.ts
 import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export async function POST(req: Request) {
     try {
-        const { pregunta } = await req.json()
+        const { pregunta, userId } = await req.json()
+
+        if (!userId) {
+            return NextResponse.json(
+                { respuesta: '⚠️ Debes iniciar sesión para usar el asistente.' },
+                { status: 401 }
+            )
+        }
+
+        // Obtener mascotas del usuario
+        const { data: mascotas, error } = await supabase
+            .from('mascotas')
+            .select('nombre, tipo, raza, edad, salud')
+            .eq('dueño_id', userId)
+
+        const contextoMascotas = mascotas && mascotas.length > 0
+            ? mascotas.map(m => `- ${m.nombre}, ${m.tipo}, raza: ${m.raza}, ${m.edad} años, salud: ${m.salud || 'desconocida'}`).join('\n')
+            : 'Este usuario aún no ha registrado mascotas.'
+
+        const prompt = `
+                    Eres un asistente experto en salud y cuidado de mascotas.
+                    A continuación tienes el perfil del usuario:
+
+        ${contextoMascotas}
+
+                Responde de forma útil y personalizada.
+                    `
 
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
@@ -13,17 +44,10 @@ export async function POST(req: Request) {
                 'HTTP-Referer': 'https://pawlink-web.vercel.app',
             },
             body: JSON.stringify({
-                model: 'deepseek/deepseek-chat-v3-0324:free', // modelo gratuito ✅
+                model: 'deepseek/deepseek-chat-v3-0324:free',
                 messages: [
-                    {
-                        role: 'system',
-                        content:
-                            'Eres un asistente experto en cuidado de mascotas. Da respuestas claras, breves y útiles para dueños de perros y gatos.',
-                    },
-                    {
-                        role: 'user',
-                        content: pregunta,
-                    },
+                    { role: 'system', content: prompt },
+                    { role: 'user', content: pregunta },
                 ],
             }),
         })
