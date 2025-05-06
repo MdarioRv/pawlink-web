@@ -18,10 +18,11 @@ export async function POST(req: Request) {
         }
 
         // Obtener mascotas del usuario
-        const { data: mascotas, error } = await supabase
+        const { data: mascotas } = await supabase
             .from('mascotas')
             .select('nombre, tipo, raza, edad, salud')
             .eq('dueño_id', userId)
+
 
         const contextoMascotas = mascotas && mascotas.length > 0
             ? mascotas.map(m => `- ${m.nombre}, ${m.tipo}, raza: ${m.raza}, ${m.edad} años, salud: ${m.salud || 'desconocida'}`).join('\n')
