@@ -33,3 +33,7 @@ export async function middleware(req: NextRequest) {
 
     return res
 }
+// Agrega esta exportación al final del archivo 👇
+export const config = {
+    matcher: ['/dashboard/:path*', '/perfil/:path*', '/mascota/:path*', '/login', '/register'],
+}

@@ -7,6 +7,7 @@ const supabase = createClient(
 )
 
 export async function POST(req: Request) {
+    console.log("🔄 API /ubicacion llamada")
     try {
         const { lat, lng, ciudad, mascota_id } = await req.json()
 
