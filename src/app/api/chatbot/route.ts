@@ -23,19 +23,31 @@ export async function POST(req: Request) {
             .select('nombre, tipo, raza, edad, salud')
             .eq('dueño_id', userId)
 
-
         const contextoMascotas = mascotas && mascotas.length > 0
-            ? mascotas.map(m => `- ${m.nombre}, ${m.tipo}, raza: ${m.raza}, ${m.edad} años, salud: ${m.salud || 'desconocida'}`).join('\n')
-            : 'Este usuario aún no ha registrado mascotas.'
+            ? mascotas.map(m =>
+                `- ${m.nombre} (${m.tipo}), raza: ${m.raza}, ${m.edad} años, salud: ${m.salud || 'sin especificar'}`
+            ).join('\n')
+            : 'Este usuario no ha registrado mascotas aún.'
+
+        const descripcionPlataforma = `
+PAWLINK es una plataforma web para la identificación y rastreo de mascotas.
+Ofrece placas QR inteligentes (y GPS en su versión premium), una vista pública accesible desde el QR,
+panel de administración, registro con foto, edad exacta, salud, y ubicación GPS visualizable en el dashboard.
+Funciona con Supabase como backend y está hecha en Next.js + Tailwind. Los usuarios pueden comprar placas,
+gestionar sus mascotas, ver ubicación simulada y editar sus datos desde el dashboard.
+`
 
         const prompt = `
-                    Eres un asistente experto en salud y cuidado de mascotas.
-                    A continuación tienes el perfil del usuario:
+Eres el Asistente Inteligente de PAWLINK, una plataforma de identificación y rastreo para mascotas.
 
-        ${contextoMascotas}
+Contexto del sistema:
+${descripcionPlataforma}
 
-                Responde de forma útil y personalizada.
-                    `
+Mascotas del usuario:
+${contextoMascotas}
+
+Responde con claridad, de forma amigable y útil para los dueños de mascotas. Si la pregunta es sobre PAWLINK, responde como si fueras parte del sistema.
+`
 
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
@@ -64,6 +76,13 @@ export async function POST(req: Request) {
         }
 
         const respuesta = data.choices[0]?.message?.content || '⚠️ No tengo una respuesta clara para eso.'
+
+        // Guardar pregunta y respuesta en Supabase
+        await supabase.from('chat_historial').insert([
+            { user_id: userId, remitente: 'user', mensaje: pregunta },
+            { user_id: userId, remitente: 'bot', mensaje: respuesta },
+        ])
+
         return NextResponse.json({ respuesta })
     } catch (error) {
         console.error('Error en API /chatbot:', error)

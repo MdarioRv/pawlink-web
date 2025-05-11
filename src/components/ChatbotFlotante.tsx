@@ -67,8 +67,8 @@ export default function ChatbotFlotante() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 20 }}
-                        className="fixed bottom-6 right-6 z-50 w-80 h-[420px] bg-white shadow-2xl rounded-2xl border border-blue-300 flex flex-col overflow-hidden"
-                    >
+                        className="fixed bottom-6 right-6 z-[9999] w-[90vw] max-w-sm h-[50vh] sm:w-80 sm:h-[420px] bg-white shadow-2xl rounded-2xl border border-blue-300 flex flex-col overflow-hidden pointer-events-auto"
+                        >
                         <div className="flex justify-between items-center px-4 py-2 bg-blue-600 text-white">
                             <h2 className="text-base font-semibold">Asistente PawLink</h2>
                             <button onClick={() => setAbierto(false)} className="hover:text-red-300 transition">
@@ -81,8 +81,8 @@ export default function ChatbotFlotante() {
                                 <div
                                     key={i}
                                     className={`whitespace-pre-wrap px-3 py-2 rounded-xl max-w-[80%] ${m.remitente === 'user'
-                                        ? 'bg-blue-100 text-right self-end ml-auto'
-                                        : 'bg-white border text-left'
+                                            ? 'bg-blue-100 text-right self-end ml-auto'
+                                            : 'bg-white border text-left'
                                         }`}
                                 >
                                     {m.texto}
@@ -115,7 +115,7 @@ export default function ChatbotFlotante() {
             </AnimatePresence>
 
             {/* Botón flotante */}
-            <div className="fixed bottom-6 right-6 z-40">
+            <div className="fixed bottom-6 right-6 z-[9999]">
                 {!abierto && (
                     <motion.button
                         key="boton"
