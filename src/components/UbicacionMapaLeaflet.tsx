@@ -22,7 +22,8 @@ interface Props {
 
 export default function UbicacionMapaLeaflet({ lat, lng, ciudad, fecha, historial }: Props) {
     useEffect(() => {
-        delete (L.Icon.Default.prototype as any)._getIconUrl
+        // Eliminamos _getIconUrl con tipado correcto
+        delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: () => string })._getIconUrl
         L.Icon.Default.mergeOptions({ shadowUrl: '' })
     }, [])
 
