@@ -39,12 +39,26 @@ export default function MascotaPublicaPage() {
     const [mascota, setMascota] = useState<Mascota | null>(null)
     const [dueño, setDueño] = useState<Dueño | null>(null)
     const [loading, setLoading] = useState(true)
+    const [mostrarHistorial, setMostrarHistorial] = useState(false)
+    const [historial, setHistorial] = useState<{ lat: number; lng: number; fecha: string }[]>([])
+
+    const cargarHistorial = async () => {
+        const { data } = await supabase
+            .from('ubicaciones')
+            .select('lat, lng, fecha')
+            .eq('mascota_id', id)
+            .order('fecha', { ascending: true })
+
+        if (data) {
+            setHistorial(data)
+            setMostrarHistorial(true)
+        }
+    }
 
     useEffect(() => {
         const obtenerDatos = async () => {
             if (!id) return
 
-            // 1. Cargar datos de la mascota
             const { data: mascotaData, error: mascotaError } = await supabase
                 .from('mascotas')
                 .select('*')
@@ -59,7 +73,6 @@ export default function MascotaPublicaPage() {
 
             setMascota(mascotaData as Mascota)
 
-            // 2. Cargar datos del dueño
             const { data: perfilData } = await supabase
                 .from('perfiles_publicos')
                 .select('nombre, telefono, email')
@@ -74,7 +87,6 @@ export default function MascotaPublicaPage() {
                 })
             }
 
-            // 3. Cargar última ubicación
             const { data: ubicacionData } = await supabase
                 .from('ubicaciones')
                 .select('*')
@@ -84,15 +96,19 @@ export default function MascotaPublicaPage() {
                 .maybeSingle()
 
             if (ubicacionData) {
-                setMascota((prev) => prev ? {
-                    ...prev,
-                    ubicacion: {
-                        lat: ubicacionData.lat,
-                        lng: ubicacionData.lng,
-                        ciudad: ubicacionData.ciudad,
-                        fecha: ubicacionData.fecha,
-                    }
-                } : null)
+                setMascota((prev) =>
+                    prev
+                        ? {
+                            ...prev,
+                            ubicacion: {
+                                lat: ubicacionData.lat,
+                                lng: ubicacionData.lng,
+                                ciudad: ubicacionData.ciudad,
+                                fecha: ubicacionData.fecha,
+                            },
+                        }
+                        : null
+                )
             }
 
             setLoading(false)
@@ -106,7 +122,11 @@ export default function MascotaPublicaPage() {
     }
 
     if (!mascota) {
-        return <main className="min-h-screen flex justify-center items-center text-red-600">Mascota no encontrada</main>
+        return (
+            <main className="min-h-screen flex justify-center items-center text-red-600">
+                Mascota no encontrada
+            </main>
+        )
     }
 
     return (
@@ -140,21 +160,33 @@ export default function MascotaPublicaPage() {
                     <p><strong>Tipo:</strong> {mascota.tipo}</p>
                     <p><strong>Raza:</strong> {mascota.raza}</p>
                     <p>
-                        <strong>Edad:</strong>{' '}
-                        {mascota.edad} {mascota.unidad_edad === 'meses' ? 'meses' : 'años'}
+                        <strong>Edad:</strong> {mascota.edad} {mascota.unidad_edad === 'meses' ? 'meses' : 'años'}
                     </p>
                     <p><strong>Estado de salud:</strong> {mascota.salud}</p>
                 </div>
 
-                {/* Mapa si existe ubicación */}
+                {/* Mapa + botón historial */}
                 {mascota.ubicacion && (
-                    <div className="pt-4 space-y-2">
-                        <h2 className="text-xl font-semibold text-gray-800">Última ubicación conocida 📍</h2>
+                    <div className="pt-4 space-y-4">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-xl font-semibold text-gray-800">Ubicación de {mascota.nombre} 🐾</h2>
+                            <button
+                                onClick={() => {
+                                    if (!mostrarHistorial) cargarHistorial()
+                                    else setMostrarHistorial(false)
+                                }}
+                                className="text-sm text-blue-600 underline"
+                            >
+                                {mostrarHistorial ? 'Ocultar historial 📉' : 'Ver historial de caminata 🐾'}
+                            </button>
+                        </div>
+
                         <UbicacionMapa
                             lat={mascota.ubicacion.lat}
                             lng={mascota.ubicacion.lng}
                             ciudad={mascota.ubicacion.ciudad}
                             fecha={mascota.ubicacion.fecha}
+                            historial={mostrarHistorial ? historial : undefined}
                         />
                     </div>
                 )}
